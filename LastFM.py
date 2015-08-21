@@ -67,7 +67,7 @@ if __name__ == '__main__':
  
     userNum = 200
     W = initializeW(userNum, relationFileName)   # Generate user relation matrix
-    GW = initializeGW(Gepsilon,userNum)
+    GW = initializeGW(Gepsilon,userNum,relationFileName)
     
     articles_random = randomStruct()
     CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
