@@ -11,7 +11,7 @@ result_folder = "./SimulationResults"
 
 save_address = "./SimulationResults"
 
-LastFM_save_address = "./LastFMResults"
+Yahoo_save_address = "./YahooResults"
 
 save_addressResult = "./Results/Sparse"
 
@@ -21,6 +21,3 @@ datasets_address = '/home/qingyun/Dropbox/workspace/datasets'
 yahoo_address = os.path.join(datasets_address, "R6")
 
 data_address = './KMeansModel'
-LastFM_address = './Dataset/hetrec2011-lastfm-2k'
-FeatureVectorsFileName = os.path.join(LastFM_address, 'Arm_FeatureVectors_2.dat')
-
