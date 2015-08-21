@@ -21,3 +21,7 @@ datasets_address = '/home/qingyun/Dropbox/workspace/datasets'
 yahoo_address = os.path.join(datasets_address, "R6")
 
 data_address = './KMeansModel'
+LastFM_address = '/Users/Summer/Dropbox/workspace/datasets/Dataset/hetrec2011-lastfm-2k'
+FeatureVectorsFileName = os.path.join(LastFM_address, 'Arm_FeatureVectors_2.dat')
+relationFileName = os.path.join(LastFM_address, 'user_friends.dat')
+
