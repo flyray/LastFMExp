@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
 
     timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M')  # the current data time
-    fileSig = 'LastFM_100Users'
-    batchSize = 1                          # size of one batch
+    fileSig = 'LastFM_200'
+    batchSize = 50                          # size of one batch
     
     d = 25           # feature dimension
     alpha = 0.3     # control how much to explore
@@ -65,8 +65,8 @@ if __name__ == '__main__':
     totalObservations = 0
 
  
-    userNum = 100
-    W = initializeW(userNum)   # Generate user relation matrix
+    userNum = 200
+    W = initializeW(userNum, relationFileName)   # Generate user relation matrix
     GW = initializeGW(Gepsilon,userNum)
     
     articles_random = randomStruct()
