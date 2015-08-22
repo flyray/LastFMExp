@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
 
     timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M')  # the current data time
-    fileSig = 'LastFM_200'
+    fileSig = 'LastFM_100'
     batchSize = 50                          # size of one batch
     
     d = 25           # feature dimension
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     totalObservations = 0
 
  
-    userNum = 200
+    userNum = 100
     W = initializeW(userNum, relationFileName)   # Generate user relation matrix
     GW = initializeGW(Gepsilon,userNum,relationFileName)
     
@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
                 # article picked by random strategy
                 #article_chosen = currentArticles[0]
-                print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
+                #print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
                 if CoLinUCBPicked !=LinUCBPicked:
                     print 'Error!!!!!'
                 RandomPicked = choice(currentArticles)
