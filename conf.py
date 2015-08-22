@@ -12,6 +12,7 @@ result_folder = "./SimulationResults"
 save_address = "./SimulationResults"
 
 LastFM_save_address = "./LastFMResults"
+Delicious_save_address = "./DeliciousResults"
 
 save_addressResult = "./Results/Sparse"
 
@@ -22,6 +23,11 @@ yahoo_address = os.path.join(datasets_address, "R6")
 
 data_address = './KMeansModel'
 LastFM_address = './Dataset/hetrec2011-lastfm-2k'
-FeatureVectorsFileName = os.path.join(LastFM_address, 'Arm_FeatureVectors_2.dat')
-relationFileName = os.path.join(LastFM_address, 'user_friends.dat')
+Delicious_address = './Dataset/hetrec2011-delicious-2k'
+
+LastFM_FeatureVectorsFileName = os.path.join(LastFM_address, 'Arm_FeatureVectors_2.dat')
+LastFM_relationFileName = os.path.join(LastFM_address, 'user_friends.dat')
+
+Delicious_FeatureVectorsFileName = os.path.join(Delicious_address, 'Arm_FeatureVectors_2.dat')
+Delicious_relationFileName = os.path.join(Delicious_address, 'user_contacts.dat')
 

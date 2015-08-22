@@ -78,6 +78,7 @@ def initializeGW( Gepsilon ,n, relationFileName):
 # generate graph W(No clustering)
 def initializeW(n,relationFileName):
     W = np.identity(n)
+    
     with open(relationFileName) as f:
         for line in f:
             line = line.split('\t')
@@ -88,6 +89,7 @@ def initializeW(n,relationFileName):
     row_sums = W.sum(axis=1)
     NormalizedW = W / row_sums[:, np.newaxis]
     W = NormalizedW
+    
     print W.T
 
     return W.T

@@ -66,8 +66,8 @@ if __name__ == '__main__':
 
  
     userNum = 100
-    W = initializeW(userNum, relationFileName)   # Generate user relation matrix
-    GW = initializeGW(Gepsilon,userNum,relationFileName)
+    W = initializeW(userNum, LastFM_relationFileName)   # Generate user relation matrix
+    GW = initializeGW(Gepsilon,userNum, LastFM_relationFileName)
     
     articles_random = randomStruct()
     CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
@@ -110,7 +110,7 @@ if __name__ == '__main__':
             GOBLinPicked = None  
            
             currentUserID = userID
-            if currentUserID > userNum:
+            if currentUserID >= userNum:
                 continue
             else:  
                 article_chosen = int(pool_articles[0])  
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 for article in pool_articles:
                     article_id = int(article.strip(']'))
                     #print article_id
-                    article_featureVector = getFeatureVector(FeatureVectorsFileName, article_id)
+                    article_featureVector = getFeatureVector(LastFM_FeatureVectorsFileName, article_id)
                     article_featureVector =np.array(article_featureVector ,dtype=float)
                     #print article_featureVector
                     currentArticles.append(article_id)
@@ -146,8 +146,8 @@ if __name__ == '__main__':
                 # article picked by random strategy
                 #article_chosen = currentArticles[0]
                 #print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
-                if CoLinUCBPicked !=LinUCBPicked:
-                    print 'Error!!!!!'
+                #if CoLinUCBPicked !=LinUCBPicked:
+                #    print 'Error!!!!!'
                 RandomPicked = choice(currentArticles)
                 if RandomPicked == article_chosen:
                     articles_random.reward +=1
