@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M')  # the current data time
     fileSig = 'Delicious_100'
-    batchSize = 1                          # size of one batch
+    batchSize = 50                         # size of one batch
     
     d = 25           # feature dimension
     alpha = 0.3     # control how much to explore
