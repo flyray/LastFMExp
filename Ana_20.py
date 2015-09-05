@@ -24,7 +24,7 @@ if __name__ == '__main__':
     #i = -1 
     for x in filenames:    
         filename = os.path.join(LastFM_save_address, x)
-        if 'LastFM_shuffled' in x:
+        if 'LastFM_100_shu' in x:
             i = -1 
             with open(filename, 'r') as f:
                 print str(filename)      
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     plt.xlabel('time')
     plt.ylabel('CTR-Ratio')
     plt.legend(loc = 'lower right')
-    plt.title('UserNum = 20')
+    plt.title('UserNum = 100')
     plt.show()
     
     '''      
