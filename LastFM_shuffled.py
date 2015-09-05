@@ -65,13 +65,14 @@ if __name__ == '__main__':
     totalObservations = 0
 
  
-    userNum = 1000
+    OriginaluserNum = 2100
     nClusters = 100
+    userNum = nClusters
 
     #W = initializeW(userNum, LastFM_relationFileName)   # Generate user relation matrix
     #GW = initializeGW(Gepsilon,userNum, LastFM_relationFileName)
 
-    normalizedNewW, newW, label = initializeW_clustering(userNum, LastFM_relationFileName, nClusters)
+    normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
     GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
     W = normalizedNewW
     
