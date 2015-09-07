@@ -125,7 +125,11 @@ def initializeW_clustering(n,relationFileName, nClusters):
     newW = np.zeros(shape=(nClusters, nClusters))
     for i in range(n):
         for j in range(n):
-            newW[label[i]][label[j]] += W[i][j]
+            if i==j:
+                newW[label[i]][label[j]] = 1
+            else:
+                newW[label[i]][label[j]] += W[i][j]
+
     print 'newWShape', newW.shape
     print 'WShape', W.shape, type(W)
     print 'newW', newW  
