@@ -91,6 +91,7 @@ def initializeW(n,relationFileName):
     W = NormalizedW
     
     print W.T
+    print 'Wtype', type(W)
     #initializeW_clustering(n,relationFileName, 5)
     return W.T
 
@@ -104,14 +105,18 @@ def initializeW_clustering(n,relationFileName, nClusters):
             if int(line[0])<=n and int(line[1]) <=n:
                 W[int(line[0])][int(line[1])] +=1   
     #KMeans
-    #kmeans = KMeans(n_clusters=nClusters)
-    #kmeans.fit(W)
-    #label = kmeans.labels_
-
+    '''
+    kmeans = KMeans(n_clusters=nClusters)
+    kmeans.fit(W)
+    label = kmeans.labels_
+    '''
+    
     #SpectralClustering
+    #spc = SpectralClustering(n_clusters=nClusters, affinity = "precomputed")
     spc = SpectralClustering(n_clusters=nClusters)
-    spc.fit(W)
+    spc.fit(W)   # What is the meaning
     label = spc.labels_
+    
 
     with open(relationFileName+'.cluster','w') as f:
         for i in range(n):
@@ -121,11 +126,15 @@ def initializeW_clustering(n,relationFileName, nClusters):
     for i in range(n):
         for j in range(n):
             newW[label[i]][label[j]] += W[i][j]
-    print newW    
+    print 'newWShape', newW.shape
+    print 'WShape', W.shape, type(W)
+    print 'newW', newW  
 
     row_sums = newW.sum(axis=1)
     NormalizednewW = newW / row_sums[:, np.newaxis]    
-    print NormalizednewW.T
+    print 'NormalizednewW', NormalizednewW.T
+    print type(label), label.shape
+    print 'label', label
     return NormalizednewW.T, newW, label
 
 def initializeGW_clustering(Gepsilon, relationFileName, newW):

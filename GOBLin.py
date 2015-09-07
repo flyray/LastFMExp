@@ -8,7 +8,7 @@ class GOBLinSharedStruct:
 	def __init__(self, featureDimension, lambda_, userNum, W):
 		self.W = W
 		self.userNum = userNum
-		self.d = featureDimension
+		self.d = int(featureDimension)
 		self.A = lambda_*np.identity(n = self.d*userNum)
 		self.b = np.zeros(featureDimension*userNum)
 		self.AInv = np.linalg.inv(self.A)
@@ -18,19 +18,24 @@ class GOBLinSharedStruct:
 		self.STBigW = sqrtm(np.kron(W, np.identity(n=self.d)))
 	
 	def updateParameters(self, articlePicked_FeatureVector, click, userID):
+		#featureVectorM = np.zeros(shape = (self.d, self.userNum))
 		featureVectorV = np.zeros(self.d*self.userNum)
-		featureVectorV[float(userID)*self.d:(float(userID)+1)*self.d] = np.asarray(articlePicked_FeatureVector)
+		#featureVectorM.T[userID] = np.asarray(articlePicked_FeatureVector)
+		#featureVectorV = vectorize(featureVectorM)
+		featureVectorV[int(userID)*self.d : (int(userID)+1)*self.d] =  np.asarray(articlePicked_FeatureVector)
 
 		CoFeaV = np.dot(self.STBigWInv, featureVectorV)
-		self.A += np.outer(CoFeaV, CoFeaV)
-		self.b += click * CoFeaV
+		self.A = self.A + np.outer(CoFeaV, CoFeaV)
+		#print 'CoFeaVtype', type(CoFeaV), type(self.b), self.b.shape, CoFeaV.shape
+
+		self.b = self.b+ float(click) * CoFeaV
 		self.AInv = np.linalg.inv(self.A)
 
 		self.theta = np.dot(self.AInv, self.b)
 	
 	def getProb(self,alpha , article_FeatureVector, userID):
 		featureVectorV = np.zeros(self.d*self.userNum)
-		featureVectorV[float(userID)*self.d:(float(userID)+1)*self.d] = np.asarray(article_FeatureVector)
+		featureVectorV[int(userID)*self.d:(int(userID)+1)*self.d] = np.asarray(article_FeatureVector)
 
 		CoFeaV = np.dot(self.STBigWInv, featureVectorV)
 

@@ -9,7 +9,7 @@ from scipy.sparse import csgraph
 from scipy.spatial import distance
 #from YahooExp_util_functions import getClusters, getIDAssignment, parseLine, save_to_file, initializeW, vectorize, matrixize, articleAccess
 from LastFM_util_functions_2 import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file, initializeW_clustering, initializeGW_clustering
-
+#from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
 
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from LinUCB import LinUCBUserStruct
@@ -68,10 +68,11 @@ if __name__ == '__main__':
     OriginaluserNum = 2100
     nClusters = 100
     userNum = nClusters
-
-    #W = initializeW(userNum, LastFM_relationFileName)   # Generate user relation matrix
-    #GW = initializeGW(Gepsilon,userNum, LastFM_relationFileName)
-
+    '''
+    W = initializeW(userNum, LastFM_relationFileName)   # Generate user relation matrix
+    GW = initializeGW(Gepsilon,userNum, LastFM_relationFileName)
+    '''
+    
     normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
     GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
     W = normalizedNewW
@@ -88,6 +89,7 @@ if __name__ == '__main__':
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
     # put some new data in file for readability
+    
     with open(fileNameWrite, 'a+') as f:
         f.write('\nNew Run at  ' + datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
         f.write('\n, Time,RandomReward; CoLinReward; LinUCBReward; GOBLinReward\n')
@@ -116,65 +118,68 @@ if __name__ == '__main__':
             GOBLin_maxPTA = float('-inf')
             GOBLinPicked = None  
            
-            currentUserID = userID
-            if currentUserID >= userNum:
-                continue
-            else:  
-                article_chosen = int(pool_articles[0])  
-                #for article in np.random.permutation(pool_articles) :
-                for article in pool_articles:
-                    article_id = int(article.strip(']'))
-                    #print article_id
-                    article_featureVector = getFeatureVector(LastFM_FeatureVectorsFileName, article_id)
-                    article_featureVector =np.array(article_featureVector ,dtype=float)
-                    #print article_featureVector
-                    currentArticles.append(article_id)
-                    # CoLinUCB pick article
-                    if len(article_featureVector)==25:
-                        #print 'Yes'
-                        CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
-                        #print article_id, CoLinUCB_pta
-                        if CoLinUCB_maxPTA < CoLinUCB_pta:
-                            CoLinUCBPicked = article_id    # article picked by CoLinUCB
-                            CoLinUCB_PickedfeatureVector = article_featureVector
-                            CoLinUCB_maxPTA = CoLinUCB_pta
-                            #print CoLinUCBPicked
-                        LinUCB_pta = LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
-                        if LinUCB_maxPTA < LinUCB_pta:
-                            LinUCBPicked = article_id
-                            LinUCB_PickedfeatureVector =  article_featureVector
-                            LinUCB_maxPTA = LinUCB_pta
-                        GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
-                        if GOBLin_maxPTA < GOBLin_pta:
-                            GOBLinPicked = article_id    # article picked by GOB.Lin
-                            GOBLin_PickedfeatureVector = article_featureVector
-                            GOBLin_maxPTA = GOBLin_pta
+            currentUserID =label[int(userID)] 
 
-                # article picked by random strategy
-                #article_chosen = currentArticles[0]
-                #print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
-                #if CoLinUCBPicked !=LinUCBPicked:
-                #    print 'Error!!!!!'
-                RandomPicked = choice(currentArticles)
-                if RandomPicked == article_chosen:
-                    articles_random.reward +=1
+            article_chosen = int(pool_articles[0])  
+            #for article in np.random.permutation(pool_articles) :
+            for article in pool_articles:
+                article_id = int(article.strip(']'))
+                #print article_id
+                article_featureVector = getFeatureVector(LastFM_FeatureVectorsFileName, article_id)
 
-                if CoLinUCBPicked == article_chosen:
-                    CoLinUCB_USERS.reward +=1
-                    CoLinReward = 1
-                CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
+                article_featureVector =np.array(article_featureVector ,dtype=float)
+                #print article_featureVector
+                currentArticles.append(article_id)
+                # CoLinUCB pick article
+                if len(article_featureVector)==25:
+                    #print 'Yes'
+                    CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+                    #print article_id, CoLinUCB_pta
+                    if CoLinUCB_maxPTA < CoLinUCB_pta:
+                        CoLinUCBPicked = article_id    # article picked by CoLinUCB
+                        CoLinUCB_PickedfeatureVector = article_featureVector
+                        CoLinUCB_maxPTA = CoLinUCB_pta
+                        #print CoLinUCBPicked
+                    LinUCB_pta = LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
+                    if LinUCB_maxPTA < LinUCB_pta:
+                        LinUCBPicked = article_id
+                        LinUCB_PickedfeatureVector =  article_featureVector
+                        LinUCB_maxPTA = LinUCB_pta
+                    GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
+                    if GOBLin_maxPTA < GOBLin_pta:
+                        GOBLinPicked = article_id    # article picked by GOB.Lin
+                        GOBLin_PickedfeatureVector = article_featureVector
+                        GOBLin_maxPTA = GOBLin_pta
 
-                if LinUCBPicked == article_chosen:
-                    LinUCB_users[currentUserID].reward +=1
-                    LinUCBReward = 1
-                LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
+            # article picked by random strategy
+            #article_chosen = currentArticles[0]
+            #print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
+            #if CoLinUCBPicked !=LinUCBPicked:
+            #    print 'Error!!!!!'
+            RandomPicked = choice(currentArticles)
+            if RandomPicked == article_chosen:
+                articles_random.reward +=1
+            
+            if CoLinUCBPicked == article_chosen:
+                CoLinUCB_USERS.reward +=1
+                CoLinReward = 1
+            CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
+            
+            if LinUCBPicked == article_chosen:
+                LinUCB_users[currentUserID].reward +=1
+                LinUCBReward = 1
+            LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
+            
+        
+            if GOBLinPicked == article_chosen:
+                GOBLin_USERS.reward +=1
+                GOBLinReward = 1
+            GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, GOBLinReward, currentUserID)
 
-                if GOBLinPicked == article_chosen:
-                    GOBLin_USERS.reward +=1
-                    GOBLinReward = 1
-                GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, GOBLinReward, currentUserID)
-                # if the batch has ended
-                if totalObservations%batchSize==0:
-                    printWrite()
-        #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
-        printWrite()
+            
+            # if the batch has ended
+            if totalObservations%batchSize==0:
+                printWrite()
+    #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
+    printWrite()
+    

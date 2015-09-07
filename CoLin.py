@@ -6,7 +6,7 @@ class CoLinUCBUserSharedStruct(object):
 	def __init__(self, featureDimension, lambda_, userNum, W):
 		self.W = W
 		self.userNum = userNum
-		self.d = featureDimension
+		self.d = int(featureDimension)
 		self.A = lambda_*np.identity(n = featureDimension*userNum) # accumulated feature matrix, a dN by dN matrix
 		self.CCA = np.identity(n = featureDimension*userNum) # inverse of A, a dN by dN matrix
 		self.b = np.zeros(featureDimension*userNum)
@@ -24,7 +24,7 @@ class CoLinUCBUserSharedStruct(object):
 	def getProb(self, alpha, articleFeatureVector, userID):
 		#print userID
 		TempFeatureV = np.zeros(len(articleFeatureVector)*self.userNum)
-		TempFeatureV[float(userID)*self.d:(float(userID)+1)*self.d] = np.asarray(articleFeatureVector)
+		TempFeatureV[int(userID)*self.d:(int(userID)+1)*self.d] = np.asarray(articleFeatureVector)
 		#print self.CoTheta.T[userID]
 		#print articleFeatureVector
 		np.dot(self.CoTheta.T[userID], self.CoTheta.T[userID])
@@ -38,6 +38,7 @@ class CoLinUCBUserSharedStruct(object):
 class AsyCoLinUCBUserSharedStruct(CoLinUCBUserSharedStruct):	
 	def updateParameters(self, articlePicked_FeatureVector, click,  userID):	
 		X = vectorize(np.outer(articlePicked_FeatureVector, self.W.T[userID])) 
+		
 		self.A += np.outer(X, X)	
 		self.b += click*X
 
