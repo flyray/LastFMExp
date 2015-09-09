@@ -30,9 +30,9 @@ for t in user_arm_tag:
 		user_arm_pool[t['uid']] = arm_pool.copy()		
 	if t['aid'] in user_arm_pool[t['uid']]:
 		user_arm_pool[t['uid']].remove(t['aid'])	
-
+random.shuffle(user_arm_tag)
 #generate random arm_pool and write to file
-fout = open(sys.argv[1].split('/')[0]+'/processed_events.dat','w')
+fout = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled.dat','w')
 fout.write('userid	timestamp	arm_pool\n')
 for t in user_arm_tag:	
 	random_pool = [t['aid']]+random.sample(user_arm_pool[t['uid']], 24)
