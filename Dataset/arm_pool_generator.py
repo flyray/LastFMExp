@@ -24,7 +24,6 @@ user_arm_pool = {}
 arm_pool = Set([])
 for t in user_arm_tag:
 	arm_pool.add(t['aid'])
-print len(arm_pool)
 
 for t in user_arm_tag:
 	if not (t['uid'] in user_arm_pool):
@@ -36,7 +35,6 @@ for t in user_arm_tag:
 fout = open(sys.argv[1].split('/')[0]+'/processed_events.dat','w')
 fout.write('userid	timestamp	arm_pool\n')
 for t in user_arm_tag:	
-	print t['uid']
 	random_pool = [t['aid']]+random.sample(user_arm_pool[t['uid']], 24)
 	fout.write(str(t['uid'])+'\t'+str(t['tstamp'])+'\t'+str(random_pool)+'\n')
 fout.close()
