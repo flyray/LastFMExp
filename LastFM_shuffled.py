@@ -1,3 +1,5 @@
+import argparse # For argument parsing
+import os.path
 from conf import *  # it saves the address of data stored and where to save the data produced by algorithms
 import time
 import re           # regular expression library
@@ -8,7 +10,7 @@ import numpy as np
 from scipy.sparse import csgraph
 from scipy.spatial import distance
 #from YahooExp_util_functions import getClusters, getIDAssignment, parseLine, save_to_file, initializeW, vectorize, matrixize, articleAccess
-from LastFM_util_functions_2 import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file, initializeW_clustering, initializeGW_clustering
+from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeGW, parseLine, save_to_file, initializeW_clustering, initializeGW_clustering
 #from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
 
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
@@ -37,6 +39,11 @@ class GOBLinStruct(GOBLinSharedStruct):
         GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
         self.reward = 0
     
+def is_valid_file(parser, arg):
+    if not os.path.exists(arg):
+        parser.error("The file %s does not exist!" % arg)
+    else:
+        return open(arg, 'r')  # return an open file handle
 
 if __name__ == '__main__':
     # regularly print stuff to see if everything is going alright.
@@ -68,14 +75,23 @@ if __name__ == '__main__':
     OriginaluserNum = 2100
     nClusters = 100
     userNum = nClusters
-    '''
-    W = initializeW(userNum, LastFM_relationFileName)   # Generate user relation matrix
-    GW = initializeGW(Gepsilon,userNum, LastFM_relationFileName)
-    '''
-    
-    normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
-    GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
-    W = normalizedNewW
+
+    # Introduce argparse for future argument parsing.
+    parser = argparse.ArgumentParser(description='')
+
+    # Parse if exsiting cluster label data.
+    parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
+                        metavar="FILE", type=lambda x: is_valid_file(parser, x))
+    args = parser.parse_args()
+
+    if args.clusterfile:   
+        label = read_cluster_label(args.clusterfile)
+        W = initializeW_label(userNum, LastFM_relationFileName, label)   # Generate user relation matrix
+        GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label)    
+    else:
+        normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
+        GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
+        W = normalizedNewW
     
     articles_random = randomStruct()
     CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)

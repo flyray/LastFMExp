@@ -149,3 +149,48 @@ def initializeGW_clustering(Gepsilon, relationFileName, newW):
     GW = I + Gepsilon*L  # W is a double stochastic matrix
     print GW          
     return GW.T
+
+def initializeGW_label(Gepsilon ,n, relationFileName, label):
+    W = np.identity(n)
+    with open(relationFileName) as f:
+        for line in f:
+            line = line.split('\t')
+            if line[0] != 'userID':
+                if int(line[0])<=n and int(line[1]) <=n:
+                    W[label[int(line[0])]][label[int(line[1])]] += 1 
+    for i in range(n):
+        W[label[i]][label[i]] = 1
+
+    G = W
+    L = csgraph.laplacian(G, normed = False)
+    I = np.identity(n)
+    GW = I + Gepsilon*L  # W is a double stochastic matrix
+    print GW          
+    return GW.T
+
+# generate graph W(No clustering)
+def initializeW_label(n,relationFileName, label):
+    W = np.identity(n)
+    
+    with open(relationFileName) as f:
+        for line in f:
+            line = line.split('\t')
+            if line[0] != 'userID':
+                if int(line[0])<=n and int(line[1]) <=n:                    
+                    W[label[int(line[0])]][label[int(line[1])]] += 1                        
+    for i in range(n):
+        W[label[i]][label[i]] = 1
+
+    row_sums = W.sum(axis=1)
+    NormalizedW = W / row_sums[:, np.newaxis]
+    W = NormalizedW
+    
+    print W.T    
+    return W.T
+
+def read_cluster_label(labelfile):
+    label = []
+    #fin = open(labelfile,'r')
+    for line in labelfile:
+        label.append(int(line))
+    return np.array(label)

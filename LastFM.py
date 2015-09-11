@@ -1,3 +1,5 @@
+import argparse # For argument parsing
+import os.path
 from conf import *  # it saves the address of data stored and where to save the data produced by algorithms
 import time
 import re           # regular expression library
@@ -14,6 +16,7 @@ from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, p
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from LinUCB import LinUCBUserStruct
 from GOBLin import GOBLinSharedStruct
+
 
 # structure to save data from random strategy as mentioned in LiHongs paper
 class randomStruct:
@@ -37,8 +40,17 @@ class GOBLinStruct(GOBLinSharedStruct):
         GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
         self.reward = 0
     
+def is_valid_file(parser, arg):
+    if not os.path.exists(arg):
+        parser.error("The file %s does not exist!" % arg)
+    else:
+        return open(arg, 'r')  # return an open file handle
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
+                        metavar="FILE", type=lambda x: is_valid_file(parser, x))
+    args = parser.parse_args()
     # regularly print stuff to see if everything is going alright.
     # this function is inside main so that it shares variables with main and I dont wanna have large number of function arguments
     def printWrite():
