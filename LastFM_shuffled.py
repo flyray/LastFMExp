@@ -91,7 +91,7 @@ if __name__ == '__main__':
     userNum = nClusters    
     if args.clusterfile:           
         label = read_cluster_label(args.clusterfile)
-        nClusters = int(args.clusterfile.name.split('.')[-1]) # Get cluster number.
+        userNum = nClusters = int(args.clusterfile.name.split('.')[-1]) # Get cluster number.
         W = initializeW_label(userNum, LastFM_relationFileName, label, args.diagnol)   # Generate user relation matrix
         GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label, args.diagnol)    
     else:
