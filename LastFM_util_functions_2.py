@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import re 			# regular expression library
 from random import random, choice 	# for random strategy
 from operator import itemgetter
@@ -169,23 +170,24 @@ def initializeGW_label(Gepsilon ,n, relationFileName, label, diagnol):
     return GW.T
 
 # generate graph W(No clustering)
-def initializeW_label(n,relationFileName, label, diagnol):
+def initializeW_label(n,relationFileName, label, diagnol, show_heatmap):
     W = np.identity(n)
     
     with open(relationFileName) as f:
         for line in f:
             line = line.split('\t')
             if line[0] != 'userID':                   
-                W[label[int(line[0])]][label[int(line[1])]] += 1 
-    print np.sum(W)                       
+                W[label[int(line[0])]][label[int(line[1])]] += 1     
     if diagnol=='1' or diagnol=='0':
         for i in range(n):
-            W[label[i]][label[i]] = int(diagnol)
-
+            W[i][i] = int(diagnol)
+    if show_heatmap:
+        heatmap(W)
     row_sums = W.sum(axis=1)
     NormalizedW = W / row_sums[:, np.newaxis]
     W = NormalizedW
-    
+    if show_heatmap:
+        heatmap(W)
     print W.T    
     return W.T
 
@@ -195,3 +197,7 @@ def read_cluster_label(labelfile):
     for line in labelfile:
         label.append(int(line))
     return np.array(label)
+def heatmap(X):
+    plt.pcolor(X)
+    plt.colorbar()
+    plt.show()

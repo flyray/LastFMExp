@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import argparse # For argument parsing
 import os.path
 from conf import *  # it saves the address of data stored and where to save the data produced by algorithms
@@ -74,6 +75,8 @@ if __name__ == '__main__':
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True,
                         help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
+    parser.add_argument('--showheatmap', action='store_true',
+                        help='Show heatmap of relation matrix.') 
     args = parser.parse_args()
     
     batchSize = 50                          # size of one batch
@@ -92,8 +95,8 @@ if __name__ == '__main__':
     if args.clusterfile:           
         label = read_cluster_label(args.clusterfile)
         userNum = nClusters = int(args.clusterfile.name.split('.')[-1]) # Get cluster number.
-        W = initializeW_label(userNum, LastFM_relationFileName, label, args.diagnol)   # Generate user relation matrix
-        GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label, args.diagnol)    
+        W = initializeW_label(userNum, LastFM_relationFileName, label, args.diagnol, args.showheatmap)   # Generate user relation matrix
+        GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label, args.diagnol)            
     else:
         normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
         GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
@@ -119,7 +122,7 @@ if __name__ == '__main__':
     CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
     GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
     LinUCB_users = []  
-    for i in range(userNum):
+    for i in range(OriginaluserNum):
         LinUCB_users.append(LinUCBStruct(d, lambda_ ))
      
     fileName = LastFM_address + "/processed_events_shuffled.dat"
