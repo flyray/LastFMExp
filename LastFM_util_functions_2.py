@@ -150,16 +150,16 @@ def initializeGW_clustering(Gepsilon, relationFileName, newW):
     print GW          
     return GW.T
 
-def initializeGW_label(Gepsilon ,n, relationFileName, label):
+def initializeGW_label(Gepsilon ,n, relationFileName, label, diagnol):
     W = np.identity(n)
     with open(relationFileName) as f:
         for line in f:
             line = line.split('\t')
             if line[0] != 'userID':
-                if int(line[0])<=n and int(line[1]) <=n:
-                    W[label[int(line[0])]][label[int(line[1])]] += 1 
-    for i in range(n):
-        W[label[i]][label[i]] = 1
+                W[label[int(line[0])]][label[int(line[1])]] += 1 
+    if diagnol=='1' or diagnol=='0':
+        for i in range(n):
+            W[label[i]][label[i]] = int(diagnol)
 
     G = W
     L = csgraph.laplacian(G, normed = False)
@@ -169,17 +169,18 @@ def initializeGW_label(Gepsilon ,n, relationFileName, label):
     return GW.T
 
 # generate graph W(No clustering)
-def initializeW_label(n,relationFileName, label):
+def initializeW_label(n,relationFileName, label, diagnol):
     W = np.identity(n)
     
     with open(relationFileName) as f:
         for line in f:
             line = line.split('\t')
-            if line[0] != 'userID':
-                if int(line[0])<=n and int(line[1]) <=n:                    
-                    W[label[int(line[0])]][label[int(line[1])]] += 1                        
-    for i in range(n):
-        W[label[i]][label[i]] = 1
+            if line[0] != 'userID':                   
+                W[label[int(line[0])]][label[int(line[1])]] += 1 
+    print np.sum(W)                       
+    if diagnol=='1' or diagnol=='0':
+        for i in range(n):
+            W[label[i]][label[i]] = int(diagnol)
 
     row_sums = W.sum(axis=1)
     NormalizedW = W / row_sums[:, np.newaxis]
@@ -189,7 +190,7 @@ def initializeW_label(n,relationFileName, label):
     return W.T
 
 def read_cluster_label(labelfile):
-    label = []
+    label = [0]
     #fin = open(labelfile,'r')
     for line in labelfile:
         label.append(int(line))

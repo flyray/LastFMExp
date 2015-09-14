@@ -61,7 +61,21 @@ if __name__ == '__main__':
 
 
     timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M')  # the current data time
-    fileSig = 'LastFM_100_shuffled_Clustering'
+    
+    # Introduce argparse for future argument parsing.
+    parser = argparse.ArgumentParser(description='')
+
+    # If exsiting cluster label data.
+    parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
+                        metavar="FILE", type=lambda x: is_valid_file(parser, x))
+    # Select algorithm.
+    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB or ALL.')
+   
+    # Designate relation matrix diagnol.
+    parser.add_argument('--diagnol', dest='diagnol', required=True,
+                        help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
+    args = parser.parse_args()
+    
     batchSize = 50                          # size of one batch
     
     d = 25           # feature dimension
@@ -74,25 +88,33 @@ if __name__ == '__main__':
  
     OriginaluserNum = 2100
     nClusters = 100
-    userNum = nClusters
-
-    # Introduce argparse for future argument parsing.
-    parser = argparse.ArgumentParser(description='')
-
-    # Parse if exsiting cluster label data.
-    parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
-                        metavar="FILE", type=lambda x: is_valid_file(parser, x))
-    args = parser.parse_args()
-
-    if args.clusterfile:   
+    userNum = nClusters    
+    if args.clusterfile:           
         label = read_cluster_label(args.clusterfile)
-        W = initializeW_label(userNum, LastFM_relationFileName, label)   # Generate user relation matrix
-        GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label)    
+        nClusters = int(args.clusterfile.name.split('.')[-1]) # Get cluster number.
+        W = initializeW_label(userNum, LastFM_relationFileName, label, args.diagnol)   # Generate user relation matrix
+        GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label, args.diagnol)    
     else:
         normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
         GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
         W = normalizedNewW
-    
+    # Decide which algorithms to run.
+    runCoLinUCB = runGOBLin = runLinUCB = False
+    if args.alg:
+        if args.alg == 'CoLinUCB':
+            runCoLinUCB = True
+        elif args.alg == 'GOBLin':
+            runGOBLin = True
+        elif args.alg == 'LinUCB':
+            runLinUCB = True
+        elif args.alg == 'ALL':
+            runColinUCB = runGOBLin = runLinUCB = True
+    else:
+        runColinUCB = runGOBLin = runLinUCB = True
+
+    fileSig = 'LastFM_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'
+
+
     articles_random = randomStruct()
     CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
     GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
@@ -113,6 +135,7 @@ if __name__ == '__main__':
     print fileName, fileNameWrite
 
     with open(fileName, 'r') as f:
+        f.readline()
         LinUCBTotalReward  = 0
         # reading file line ie observations running one at a time
         for line in f:
