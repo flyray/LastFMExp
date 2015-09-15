@@ -75,8 +75,13 @@ if __name__ == '__main__':
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True,
                         help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
+    # Whether show heatmap of relation matrix.
     parser.add_argument('--showheatmap', action='store_true',
                         help='Show heatmap of relation matrix.') 
+    # Dataset.
+    parser.add_argument('--dataset', required=True, choices=['LastFM', 'Delicious'],
+                        help='Select Dataset to run, could be LastFM or Delicious.')
+
     args = parser.parse_args()
     
     batchSize = 50                          # size of one batch
@@ -91,15 +96,25 @@ if __name__ == '__main__':
  
     OriginaluserNum = 2100
     nClusters = 100
-    userNum = nClusters    
+    userNum = nClusters   
+    if args.dataset == 'LastFM':
+        relationFileName = LastFM_relationFileName
+        address = LastFM_address
+        save_address = LastFM_save_address
+        FeatureVectorsFileName = LastFM_FeatureVectorsFileName
+    else:
+        relationFileName = Delicious_relationFileName
+        address = Delicious_address
+        save_address = Delicious_save_address
+        FeatureVectorsFileName = Delicious_FeatureVectorsFileName        
     if args.clusterfile:           
         label = read_cluster_label(args.clusterfile)
         userNum = nClusters = int(args.clusterfile.name.split('.')[-1]) # Get cluster number.
-        W = initializeW_label(userNum, LastFM_relationFileName, label, args.diagnol, args.showheatmap)   # Generate user relation matrix
-        GW = initializeGW_label(Gepsilon,userNum, LastFM_relationFileName, label, args.diagnol)            
+        W = initializeW_label(userNum, relationFileName, label, args.diagnol, args.showheatmap)   # Generate user relation matrix
+        GW = initializeGW_label(Gepsilon,userNum, relationFileName, label, args.diagnol)            
     else:
-        normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, LastFM_relationFileName, nClusters)
-        GW = initializeGW_clustering(Gepsilon, LastFM_relationFileName, newW)
+        normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, relationFileName, nClusters)
+        GW = initializeGW_clustering(Gepsilon, relationFileName, newW)
         W = normalizedNewW
     # Decide which algorithms to run.
     runCoLinUCB = runGOBLin = runLinUCB = False
@@ -115,7 +130,7 @@ if __name__ == '__main__':
     else:
         runColinUCB = runGOBLin = runLinUCB = True
 
-    fileSig = 'LastFM_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'
+    fileSig = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'
 
 
     articles_random = randomStruct()
@@ -125,8 +140,8 @@ if __name__ == '__main__':
     for i in range(OriginaluserNum):
         LinUCB_users.append(LinUCBStruct(d, lambda_ ))
      
-    fileName = LastFM_address + "/processed_events_shuffled.dat"
-    fileNameWrite = os.path.join(LastFM_save_address, fileSig + timeRun + '.csv')
+    fileName = address + "/processed_events_shuffled.dat"
+    fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
     # put some new data in file for readability
@@ -167,7 +182,7 @@ if __name__ == '__main__':
             for article in pool_articles:
                 article_id = int(article.strip(']'))
                 #print article_id
-                article_featureVector = getFeatureVector(LastFM_FeatureVectorsFileName, article_id)
+                article_featureVector = getFeatureVector(FeatureVectorsFileName, article_id)
 
                 article_featureVector =np.array(article_featureVector ,dtype=float)
                 #print article_featureVector

@@ -160,7 +160,7 @@ def initializeGW_label(Gepsilon ,n, relationFileName, label, diagnol):
                 W[label[int(line[0])]][label[int(line[1])]] += 1 
     if diagnol=='1' or diagnol=='0':
         for i in range(n):
-            W[label[i]][label[i]] = int(diagnol)
+            W[i][i] = int(diagnol)
 
     G = W
     L = csgraph.laplacian(G, normed = False)
