@@ -197,7 +197,7 @@ if __name__ == '__main__':
                         CoLinUCB_PickedfeatureVector = article_featureVector
                         CoLinUCB_maxPTA = CoLinUCB_pta
                         #print CoLinUCBPicked
-                    LinUCB_pta = LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
+                    LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
                     if LinUCB_maxPTA < LinUCB_pta:
                         LinUCBPicked = article_id
                         LinUCB_PickedfeatureVector =  article_featureVector
@@ -223,9 +223,9 @@ if __name__ == '__main__':
             CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
             
             if LinUCBPicked == article_chosen:
-                LinUCB_users[currentUserID].reward +=1
+                LinUCB_users[int(userID)].reward +=1
                 LinUCBReward = 1
-            LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
+            LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
             
         
             if GOBLinPicked == article_chosen:
