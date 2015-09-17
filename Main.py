@@ -52,7 +52,7 @@ if __name__ == '__main__':
     def printWrite():
         if runLinUCB:
             LinUCBTotalReward = 0
-            for i in range(userNum): 
+            for i in range(OriginaluserNum): 
                 LinUCBTotalReward += LinUCB_users[i].reward    
 
         print totalObservations
