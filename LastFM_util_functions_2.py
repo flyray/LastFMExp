@@ -123,23 +123,21 @@ def initializeW_clustering(n,relationFileName, nClusters):
         for i in range(n):
             f.write(str(label[i])+'\n')
         
-    newW = np.zeros(shape=(nClusters, nClusters))
+    NeighborW = np.zeros(shape=(nClusters, nClusters))
     for i in range(n):
         for j in range(n):
             if label[i]==label[j]:
-                newW[label[i]][label[j]] = 1
+                NeighborW[label[i]][label[j]] = 0
             else:
-                newW[label[i]][label[j]] += W[i][j]
+                NeighborW[label[i]][label[j]] += W[i][j]
+    NormalizedNeighborW = normalizeByRow(NeighborW)
 
-    print 'newWShape', newW.shape
-    print 'WShape', W.shape, type(W)
+    newW = np.identity(nClusters) + NormalizedNeighborW   
     print 'newW', newW  
 
-    row_sums = newW.sum(axis=1)
-    NormalizednewW = newW / row_sums[:, np.newaxis]    
+    NormalizednewW = normalizeByRow(newW)   
     print 'NormalizednewW', NormalizednewW.T
-    print type(label), label.shape
-    print 'label', label
+
     return NormalizednewW.T, newW, label
 
 def initializeGW_clustering(Gepsilon, relationFileName, newW):
@@ -201,3 +199,7 @@ def heatmap(X):
     plt.pcolor(X)
     plt.colorbar()
     plt.show()
+def normalizeByRow(Matrix):
+    row_sums = Matrix.sum(axis=1)
+    NormalizednewMatrix = Matrix / row_sums[:, np.newaxis]  
+    return NormalizednewMatrix
