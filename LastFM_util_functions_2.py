@@ -186,10 +186,27 @@ def initializeW_label(n,relationFileName, label, diagnol, show_heatmap):
         for i in range(n):
             W[i][i] = 0
         W = normalizeByRow(W)
-        print W
+        if show_heatmap:
+            heatmap(W)
         for i in range(n):
             W[i][i] = float(diagnol)
+        if show_heatmap:
+            heatmap(W)
+
+    if diagnol == 'Max':
+        for i in range(n):
+            W[i][i] = 0
+        W = normalizeByRow(W)
+
+        if show_heatmap:
+            heatmap(W)
+        for i in range(n):
+            maxi = max(W[i])
+            W[i][i] = maxi
         print W
+        if show_heatmap:
+            heatmap(W)
+
     W = normalizeByRow(W)
     if show_heatmap:
         heatmap(W)
@@ -208,6 +225,11 @@ def heatmap(X):
     plt.show()
 def normalizeByRow(Matrix):
     row_sums = Matrix.sum(axis=1)
+    
+    for i in range(len(row_sums)):
+        if row_sums[i] ==0:
+            row_sums[i] =0.00000000000001
+    print row_sums
     NormalizednewMatrix = Matrix / row_sums[:, np.newaxis]  
     return NormalizednewMatrix
 def is_number(s):
