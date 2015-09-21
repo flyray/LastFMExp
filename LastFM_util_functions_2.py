@@ -206,6 +206,15 @@ def initializeW_label(n,relationFileName, label, diagnol, show_heatmap):
         print W
         if show_heatmap:
             heatmap(W)
+    if diagnol == 'Opt':
+        for i in range(n):
+            W[i][i] = 0
+        W = normalizeByRow(W)
+        for i in range(n):
+            W[i][i] = np.linalg.norm(W[i])**2
+        print W
+        if show_heatmap:
+            heatmap(W)
 
     W = normalizeByRow(W)
     if show_heatmap:
