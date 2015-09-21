@@ -74,7 +74,7 @@ if __name__ == '__main__':
    
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True,
-                        help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
+                        help='Designate relation matrix diagnol, could be any real number, or Origin.') 
     # Whether show heatmap of relation matrix.
     parser.add_argument('--showheatmap', action='store_true',
                         help='Show heatmap of relation matrix.') 

@@ -156,9 +156,12 @@ def initializeGW_label(Gepsilon ,n, relationFileName, label, diagnol):
             line = line.split('\t')
             if line[0] != 'userID':
                 W[label[int(line[0])]][label[int(line[1])]] += 1 
+    # don't need it
+    '''
     if diagnol=='1' or diagnol=='0':
         for i in range(n):
             W[i][i] = int(diagnol)
+    '''
 
     G = W
     L = csgraph.laplacian(G, normed = False)
@@ -176,14 +179,18 @@ def initializeW_label(n,relationFileName, label, diagnol, show_heatmap):
             line = line.split('\t')
             if line[0] != 'userID':                   
                 W[label[int(line[0])]][label[int(line[1])]] += 1     
-    if diagnol=='1' or diagnol=='0':
-        for i in range(n):
-            W[i][i] = int(diagnol)
     if show_heatmap:
         heatmap(W)
-    row_sums = W.sum(axis=1)
-    NormalizedW = W / row_sums[:, np.newaxis]
-    W = NormalizedW
+    # normalize
+    if is_number(diagnol):
+        for i in range(n):
+            W[i][i] = 0
+        W = normalizeByRow(W)
+        print W
+        for i in range(n):
+            W[i][i] = float(diagnol)
+        print W
+    W = normalizeByRow(W)
     if show_heatmap:
         heatmap(W)
     print W.T    
@@ -203,3 +210,9 @@ def normalizeByRow(Matrix):
     row_sums = Matrix.sum(axis=1)
     NormalizednewMatrix = Matrix / row_sums[:, np.newaxis]  
     return NormalizednewMatrix
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
