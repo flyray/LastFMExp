@@ -1,3 +1,4 @@
+import pickle # Save model 
 import matplotlib.pyplot as plt
 import argparse # For argument parsing
 import os.path
@@ -93,6 +94,13 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', required=True, choices=['LastFM', 'Delicious'],
                         help='Select Dataset to run, could be LastFM or Delicious.')
 
+    # Load previous running status. Haven't finished.
+    parser.add_argument('--load', 
+                        help='Load previous running status.')
+
+    #Stop at certain line number. Haven't finished.
+    parser.add_argument('--line', type=int,
+                        help='Stop at certain line number, debug use.')
     args = parser.parse_args()
     
     batchSize = 50                          # size of one batch
@@ -153,7 +161,6 @@ if __name__ == '__main__':
         LinUCB_users = []  
         for i in range(OriginaluserNum):
             LinUCB_users.append(LinUCBStruct(d, lambda_ ))
-     
     fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
@@ -173,12 +180,14 @@ if __name__ == '__main__':
 
     print fileName, fileNameWrite
 
+    tsave = 10*1*1 # Time interval for saving model is one hour.
+    tstart = time.time()
     with open(fileName, 'r') as f:
         f.readline()
         if runLinUCB:
             LinUCBTotalReward  = 0
         # reading file line ie observations running one at a time
-        for line in f:
+        for i, line in enumerate(f, 1):
             if runCoLinUCB:
                 CoLinReward = 0
             if runLinUCB:
@@ -252,22 +261,34 @@ if __name__ == '__main__':
                     CoLinUCB_USERS.reward +=1
                     CoLinReward = 1
                 CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_CoLinUCB_Diagnol_'+args.diagnol+'_' + timeRun + '_line_'+ str(i)+'.model'
+                    pickle.dump(CoLinUCB_USERS, model_name)                
             if runLinUCB:
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward +=1
                     LinUCBReward = 1
                 LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_LinUCB_Diagnol_'+args.diagnol+'_' + timeRun + '_line_'+ str(i)+'.model'
+                    pickle.dump(LinUCB_users, model_name)
                 
             if runGOBLin:
                 if GOBLinPicked == article_chosen:
                     GOBLin_USERS.reward +=1
                     GOBLinReward = 1
                 GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, GOBLinReward, currentUserID)
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_GOBLin_Diagnol_'+args.diagnol+'_' + timeRun + '_line_'+ str(i)+'.model'
+                    pickle.dump(GOBLin_USERS, model_name)
 
-            
+            save_flag = 0
             # if the batch has ended
             if totalObservations%batchSize==0:
                 printWrite()
+                tend = time.time()
+                if tstart-tend>tsave:
+                    save_flag = 1
     #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
     printWrite()
     
