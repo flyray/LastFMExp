@@ -151,7 +151,7 @@ if __name__ == '__main__':
         elif args.alg == 'Uniform_LinUCB':
             run_Uniform_LinUCB = True
         elif args.alg == 'ALL':
-            runCoLinUCB = runGOBLin = runLinUCB = True
+            runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=True
     else:
         runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
 
