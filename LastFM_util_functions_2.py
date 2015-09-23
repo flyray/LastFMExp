@@ -1,3 +1,4 @@
+import pickle # Save model 
 import matplotlib.pyplot as plt
 import re 			# regular expression library
 from random import random, choice 	# for random strategy
@@ -247,3 +248,11 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+def model_dump(obj, filename, linenum):
+    fout = open(filename +'.model', 'w')
+    pickle.dump(obj, fout)
+    fout.close()
+    fout = open(filename +'.txt', 'w')
+    fout.write("line\t"+str(linenum))
+    fout.close()
