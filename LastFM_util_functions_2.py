@@ -123,23 +123,21 @@ def initializeW_clustering(n,relationFileName, nClusters):
         for i in range(n):
             f.write(str(label[i])+'\n')
         
-    newW = np.zeros(shape=(nClusters, nClusters))
+    NeighborW = np.zeros(shape=(nClusters, nClusters))
     for i in range(n):
         for j in range(n):
             if label[i]==label[j]:
-                newW[label[i]][label[j]] = 1
+                NeighborW[label[i]][label[j]] = 0
             else:
-                newW[label[i]][label[j]] += W[i][j]
+                NeighborW[label[i]][label[j]] += W[i][j]
+    NormalizedNeighborW = normalizeByRow(NeighborW)
 
-    print 'newWShape', newW.shape
-    print 'WShape', W.shape, type(W)
+    newW = np.identity(nClusters) + NormalizedNeighborW   
     print 'newW', newW  
 
-    row_sums = newW.sum(axis=1)
-    NormalizednewW = newW / row_sums[:, np.newaxis]    
+    NormalizednewW = normalizeByRow(newW)   
     print 'NormalizednewW', NormalizednewW.T
-    print type(label), label.shape
-    print 'label', label
+
     return NormalizednewW.T, newW, label
 
 def initializeGW_clustering(Gepsilon, relationFileName, newW):
@@ -158,9 +156,12 @@ def initializeGW_label(Gepsilon ,n, relationFileName, label, diagnol):
             line = line.split('\t')
             if line[0] != 'userID':
                 W[label[int(line[0])]][label[int(line[1])]] += 1 
+    # don't need it
+    '''
     if diagnol=='1' or diagnol=='0':
         for i in range(n):
             W[i][i] = int(diagnol)
+    '''
 
     G = W
     L = csgraph.laplacian(G, normed = False)
@@ -178,14 +179,44 @@ def initializeW_label(n,relationFileName, label, diagnol, show_heatmap):
             line = line.split('\t')
             if line[0] != 'userID':                   
                 W[label[int(line[0])]][label[int(line[1])]] += 1     
-    if diagnol=='1' or diagnol=='0':
-        for i in range(n):
-            W[i][i] = int(diagnol)
     if show_heatmap:
         heatmap(W)
-    row_sums = W.sum(axis=1)
-    NormalizedW = W / row_sums[:, np.newaxis]
-    W = NormalizedW
+    # normalize
+    if is_number(diagnol):
+        for i in range(n):
+            W[i][i] = 0
+        W = normalizeByRow(W)
+        if show_heatmap:
+            heatmap(W)
+        for i in range(n):
+            W[i][i] = float(diagnol)
+        if show_heatmap:
+            heatmap(W)
+
+    if diagnol == 'Max':
+        for i in range(n):
+            W[i][i] = 0
+        W = normalizeByRow(W)
+
+        if show_heatmap:
+            heatmap(W)
+        for i in range(n):
+            maxi = max(W[i])
+            W[i][i] = maxi
+        print W
+        if show_heatmap:
+            heatmap(W)
+    if diagnol == 'Opt':
+        for i in range(n):
+            W[i][i] = 0
+        W = normalizeByRow(W)
+        for i in range(n):
+            W[i][i] = np.linalg.norm(W[i])**2
+        print W
+        if show_heatmap:
+            heatmap(W)
+
+    W = normalizeByRow(W)
     if show_heatmap:
         heatmap(W)
     print W.T    
@@ -201,3 +232,18 @@ def heatmap(X):
     plt.pcolor(X)
     plt.colorbar()
     plt.show()
+def normalizeByRow(Matrix):
+    row_sums = Matrix.sum(axis=1)
+    
+    for i in range(len(row_sums)):
+        if row_sums[i] ==0:
+            row_sums[i] =0.00000000000001
+    print row_sums
+    NormalizednewMatrix = Matrix / row_sums[:, np.newaxis]  
+    return NormalizednewMatrix
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False

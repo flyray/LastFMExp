@@ -1,7 +1,6 @@
-import pickle # Save model 
 import matplotlib.pyplot as plt
 import argparse # For argument parsing
-import os.path
+#import os.path
 from conf import *  # it saves the address of data stored and where to save the data produced by algorithms
 import time
 import re           # regular expression library
@@ -54,7 +53,11 @@ if __name__ == '__main__':
         if runLinUCB:
             LinUCBTotalReward = 0
             for i in range(OriginaluserNum): 
-                LinUCBTotalReward += LinUCB_users[i].reward    
+                LinUCBTotalReward += LinUCB_users[i].reward
+        if run_M_LinUCB:
+            M_LinUCBTotalReward = 0
+            for i in range(userNum):
+                M_LinUCBTotalReward += M_LinUCB_users[i].reward    
 
         print totalObservations
         recordedStats = [articles_random.reward]
@@ -62,12 +65,18 @@ if __name__ == '__main__':
         if runCoLinUCB:
             s += '  CoLin '+str(CoLinUCB_USERS.reward)
             recordedStats.append(CoLinUCB_USERS.reward)
-        if runLinUCB:
-            s += '  LinUCB '+str(LinUCBTotalReward)
-            recordedStats.append(LinUCBTotalReward)
         if runGOBLin:
             s += '  GOBLin '+str(GOBLin_USERS.reward)
             recordedStats.append(GOBLin_USERS.reward)
+        if runLinUCB:
+            s += '  LinUCB '+str(LinUCBTotalReward)
+            recordedStats.append(LinUCBTotalReward)
+        if run_M_LinUCB:
+            s += '  M_LinUCB ' + str(M_LinUCBTotalReward)
+            recordedStats.append(M_LinUCBTotalReward)
+        if run_Uniform_LinUCB:
+            s += ' Uniform_LinUCB ' + str(Uniform_LinUCB_USERS.reward)
+            recordedStats.append(Uniform_LinUCB_USERS.reward)
         print s         
         # write to file
         save_to_file(fileNameWrite, recordedStats, tim) 
@@ -82,7 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
                         metavar="FILE", type=lambda x: is_valid_file(parser, x))
     # Select algorithm.
-    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB or ALL.')
+    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL.')
    
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True,
@@ -136,7 +145,7 @@ if __name__ == '__main__':
         GW = initializeGW_clustering(Gepsilon, relationFileName, newW)
         W = normalizedNewW
     # Decide which algorithms to run.
-    runCoLinUCB = runGOBLin = runLinUCB = False
+    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= False
     if args.alg:
         if args.alg == 'CoLinUCB':
             runCoLinUCB = True
@@ -144,10 +153,14 @@ if __name__ == '__main__':
             runGOBLin = True
         elif args.alg == 'LinUCB':
             runLinUCB = True
+        elif args.alg =='M_LinUCB':
+            run_M_LinUCB = True
+        elif args.alg == 'Uniform_LinUCB':
+            run_Uniform_LinUCB = True
         elif args.alg == 'ALL':
-            runCoLinUCB = runGOBLin = runLinUCB = True
+            runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=True
     else:
-        runCoLinUCB = runGOBLin = runLinUCB = True
+        runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
 
     fileSig = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'
 
@@ -157,10 +170,19 @@ if __name__ == '__main__':
         CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
     if runGOBLin:
         GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
+
     if runLinUCB:
         LinUCB_users = []  
         for i in range(OriginaluserNum):
             LinUCB_users.append(LinUCBStruct(d, lambda_ ))
+
+    if run_M_LinUCB:
+        M_LinUCB_users = []
+        for i in range(userNum):
+            M_LinUCB_users.append(LinUCBStruct(d, lambda_))
+    if run_Uniform_LinUCB:
+        Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
+
     fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
@@ -172,16 +194,21 @@ if __name__ == '__main__':
         f.write('\n, Time, RandomReward; ')
         if runCoLinUCB:
             f.write('CoLinReward; ')
-        if runLinUCB:
-            f.write('LinUCBReward; ') 
         if runGOBLin:
             f.write('GOBLinReward; ')
+        if runLinUCB:
+            f.write('LinUCBReward; ') 
+        if run_M_LinUCB:
+            f.write('M_LinUCBReward')
+        if run_Uniform_LinUCB:
+            f.write('Uniform_LinUCBReward')
         f.write('\n')
 
     print fileName, fileNameWrite
 
-    tsave = 10*1*1 # Time interval for saving model is one hour.
+    tsave = 60*60*1 # Time interval for saving model is one hour.
     tstart = time.time()
+    save_flag = 0
     with open(fileName, 'r') as f:
         f.readline()
         if runLinUCB:
@@ -190,10 +217,14 @@ if __name__ == '__main__':
         for i, line in enumerate(f, 1):
             if runCoLinUCB:
                 CoLinReward = 0
-            if runLinUCB:
-                LinUCBReward = 0
             if runGOBLin:
                 GOBLinReward = 0
+            if runLinUCB:
+                LinUCBReward = 0
+            if run_M_LinUCB:
+                M_LinUCBReward = 0
+            if run_Uniform_LinUCB:
+                Uniform_LinUCBReward = 0
 
             totalObservations +=1
             userID, tim, pool_articles = parseLine(line)
@@ -205,12 +236,18 @@ if __name__ == '__main__':
             if runCoLinUCB:
                 CoLinUCB_maxPTA = float('-inf')
                 CoLinUCBPicked = None  
+            if runGOBLin:
+                GOBLin_maxPTA = float('-inf')
+                GOBLinPicked = None 
             if runLinUCB:
                 LinUCB_maxPTA = float('-inf')  
                 LinUCBPicked = None  
-            if runGOBLin:
-                GOBLin_maxPTA = float('-inf')
-                GOBLinPicked = None  
+            if run_M_LinUCB:
+                M_LinUCB_maxPTA = float('-inf')
+                M_LinUCBPicked = None
+            if run_Uniform_LinUCB:
+                Uniform_LinUCB_maxPTA =  float('-inf')
+                Uniform_LinUCB_Picked = None
            
             currentUserID =label[int(userID)] 
 
@@ -235,18 +272,30 @@ if __name__ == '__main__':
                             CoLinUCB_PickedfeatureVector = article_featureVector
                             CoLinUCB_maxPTA = CoLinUCB_pta
                             #print CoLinUCBPicked
-                    if runLinUCB:
-                        LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
-                        if LinUCB_maxPTA < LinUCB_pta:
-                            LinUCBPicked = article_id
-                            LinUCB_PickedfeatureVector =  article_featureVector
-                            LinUCB_maxPTA = LinUCB_pta
                     if runGOBLin:
                         GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
                         if GOBLin_maxPTA < GOBLin_pta:
                             GOBLinPicked = article_id    # article picked by GOB.Lin
                             GOBLin_PickedfeatureVector = article_featureVector
                             GOBLin_maxPTA = GOBLin_pta
+                    if runLinUCB:
+                        LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
+                        if LinUCB_maxPTA < LinUCB_pta:
+                            LinUCBPicked = article_id
+                            LinUCB_PickedfeatureVector =  article_featureVector
+                            LinUCB_maxPTA = LinUCB_pta
+                    if run_M_LinUCB:
+                        M_LinUCB_pta = M_LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
+                        if M_LinUCB_maxPTA < M_LinUCB_pta:
+                            M_LinUCBPicked = article_id
+                            M_LinUCB_PickedfeatureVector = article_featureVector
+                            M_LinUCB_maxPTA = M_LinUCB_pta
+                    if run_Uniform_LinUCB:
+                        Uniform_LinUCB_pta = Uniform_LinUCB_USERS.getProb(alpha, article_featureVector)
+                        if Uniform_LinUCB_maxPTA < Uniform_LinUCB_pta:
+                            Uniform_LinUCB_Picked = article_id
+                            Uniform_LinUCB_PickedfeatureVector = article_featureVector
+                            Uniform_LinUCB_maxPTA = Uniform_LinUCB_pta
 
             # article picked by random strategy
             #article_chosen = currentArticles[0]
@@ -262,33 +311,50 @@ if __name__ == '__main__':
                     CoLinReward = 1
                 CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
                 if save_flag:
-                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_CoLinUCB_Diagnol_'+args.diagnol+'_' + timeRun + '_line_'+ str(i)+'.model'
-                    pickle.dump(CoLinUCB_USERS, model_name)                
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_CoLinUCB_Diagnol_'+args.diagnol+'_' + timeRun                    
+                    model_dump(CoLinUCB_USERS, model_name, i)                
             if runLinUCB:
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward +=1
                     LinUCBReward = 1
                 LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
                 if save_flag:
-                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_LinUCB_Diagnol_'+args.diagnol+'_' + timeRun + '_line_'+ str(i)+'.model'
-                    pickle.dump(LinUCB_users, model_name)
-                
+                    print "Start saving model"
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_LinUCB_Diagnol_'+args.diagnol+'_' + timeRun
+                    model_dump(LinUCB_users, model_name, i)
+            if run_M_LinUCB:
+                if M_LinUCBPicked == article_chosen:
+                    M_LinUCB_users[currentUserID].reward +=1
+                    M_LinUCBReward = 1
+                M_LinUCB_users[currentUserID].updateParameters(M_LinUCB_PickedfeatureVector, M_LinUCBReward)
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_MLinUCB_Diagnol_'+args.diagnol+'_' + timeRun
+                    model_dump(M_LinUCB_users, model_name, i)                   
+            if run_Uniform_LinUCB:
+                if Uniform_LinUCB_Picked == article_chosen:
+                    Uniform_LinUCB_USERS.reward +=1
+                    Uniform_LinUCBReward = 1
+                Uniform_LinUCB_USERS.updateParameters(Uniform_LinUCB_PickedfeatureVector, Uniform_LinUCBReward)                
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_UniformLinUCB_Diagnol_'+args.diagnol+'_' + timeRun
+                    model_dump(Uniform_LinUCB_USERS, model_name, i)                
             if runGOBLin:
                 if GOBLinPicked == article_chosen:
                     GOBLin_USERS.reward +=1
                     GOBLinReward = 1
                 GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, GOBLinReward, currentUserID)
                 if save_flag:
-                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_GOBLin_Diagnol_'+args.diagnol+'_' + timeRun + '_line_'+ str(i)+'.model'
-                    pickle.dump(GOBLin_USERS, model_name)
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_GOBLin_Diagnol_'+args.diagnol+'_' + timeRun
+                    model_dump(GOBLin_USERS, model_name, i)
 
             save_flag = 0
             # if the batch has ended
             if totalObservations%batchSize==0:
                 printWrite()
                 tend = time.time()
-                if tstart-tend>tsave:
+                if tend-tstart>tsave:
                     save_flag = 1
+                    tstart = tend
     #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
     printWrite()
     
