@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import argparse # For argument parsing
 #import os.path
 from conf import *  # it saves the address of data stored and where to save the data produced by algorithms
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         save_to_file(fileNameWrite, recordedStats, tim) 
 
 
-    timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M')  # the current data time
+    timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M_%S')  # the current data time
     
     # Introduce argparse for future argument parsing.
     parser = argparse.ArgumentParser(description='')
