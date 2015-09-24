@@ -144,6 +144,8 @@ if __name__ == '__main__':
         normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, relationFileName, nClusters)
         GW = initializeGW_clustering(Gepsilon, relationFileName, newW)
         W = normalizedNewW
+    # Read Feature Vectors from File
+    FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
     # Decide which algorithms to run.
     runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= False
     if args.alg:
@@ -256,7 +258,7 @@ if __name__ == '__main__':
             for article in pool_articles:
                 article_id = int(article.strip(']'))
                 #print article_id
-                article_featureVector = getFeatureVector(FeatureVectorsFileName, article_id)
+                article_featureVector = FeatureVectors[article_id]
 
                 article_featureVector =np.array(article_featureVector ,dtype=float)
                 #print article_featureVector

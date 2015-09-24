@@ -22,7 +22,7 @@ def matrixize(V, C_dimension):
 	W = temp
 	return W
 
-def getFeatureVector(FeatureVectorsFileName, articleID):
+def getFeatureVector(articleID):
     FeatureVector = np.zeros(25)
     with open(FeatureVectorsFileName, 'r') as f:
         #print str(FeatureVectorsFileName)
@@ -35,7 +35,15 @@ def getFeatureVector(FeatureVectorsFileName, articleID):
                 FeatureVector = np.asarray(line[1].strip('[]').strip('\n').split(';'))
                 #FeatureVector = FeatureVector.astype(np.float)
     return FeatureVector
-
+def readFeatureVectorFile(FeatureVectorsFileName):
+    FeatureVectors = {}
+    with open(FeatureVectorsFileName, 'r') as f:        
+        f.readline()
+        for line in f:
+            line = line.split("\t")            
+            vec = line[1].strip('[]').strip('\n').split(';')
+            FeatureVectors[int(line[0])] = vec
+    return FeatureVectors
 
 # This code simply reads one line from the source files of Yahoo!
 def parseLine(line):
