@@ -10,8 +10,8 @@ for line in fin:
 		num += 1
 fin.close()
 
-fin = open('user_taggedbookmarks-timestamps.dat','r')
-fout = open('user_taggedbookmarks-timestamps.dat.mapped','w')
+fin = open('tag_removed_log.dat','r')
+fout = open('tag_removed_log.dat.mapped','w')
 fout.write(fin.readline())
 for line in fin:
 	user = line.split()[0]
