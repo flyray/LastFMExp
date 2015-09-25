@@ -22,19 +22,6 @@ def matrixize(V, C_dimension):
 	W = temp
 	return W
 
-def getFeatureVector(articleID):
-    FeatureVector = np.zeros(25)
-    with open(FeatureVectorsFileName, 'r') as f:
-        #print str(FeatureVectorsFileName)
-        for line in f:
-
-            line = line.split("\t")
-            #print len(line)
-            #print line[0]       
-            if line[0] == str(articleID):
-                FeatureVector = np.asarray(line[1].strip('[]').strip('\n').split(';'))
-                #FeatureVector = FeatureVector.astype(np.float)
-    return FeatureVector
 def readFeatureVectorFile(FeatureVectorsFileName):
     FeatureVectors = {}
     with open(FeatureVectorsFileName, 'r') as f:        
