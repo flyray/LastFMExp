@@ -38,6 +38,7 @@ tag_count = defaultdict(int)
 tag_remove = Set([])
 for t in raw_user_bookmark_tag:
 	tag_count[t['tid']] += 1
+
 for tid in tag_count:
 	if tag_count[tid] < 10:
 		ftagremove.write(str(tid)+'\n')
@@ -58,19 +59,22 @@ for line in file:
 			if not word in vocab:
 				vocab[word] = len(vocab)
 		#print arr[0]+' '+str(tag2word[int(arr[0])])
+
 print 'vocabulary size: '+str(len(vocab))
 
 
 
 num = 0
-#ftmp = open(sys.argv[1]+'tmp.dat','w')
+ftmp = open('tag_removed_log.dat','w')
+ftmp.write('Hehe\n')
 logs = []
 for i,t in enumerate(raw_user_bookmark_tag):
 	if raw_user_bookmark_tag[i]['tid'] in tag_remove:		
 		num += 1
 	else:
 		logs.append(t)
-		#ftmp.write(str(t)+'\n')
+		ftmp.write(str(t['uid'])+'\t'+str(t['aid'])+'\t'+str(t['tid'])+'\t'+str(t['tstamp'])+'\n')
+ftmp.close()
 print 'removed event: '+str(num)
 
 #build index & document
@@ -81,6 +85,8 @@ for i,t in enumerate(logs):
 		bookmark2idx[t['aid']] = len(bookmark2idx)
 		idx2bookmark.append(t['aid'])
 		#print str(bookmark2idx[t['aid']])+' '+str(len(idx2bookmark))	
+
+print bookmark2idx[76774]
 
 #counting frequency 
 #x = numpy.zeros(shape = (len(bookmark2idx), len(vocab)))
