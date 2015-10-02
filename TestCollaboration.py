@@ -103,6 +103,9 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', required=True, choices=['LastFM', 'Delicious'],
                         help='Select Dataset to run, could be LastFM or Delicious.')
 
+    # Cut type.
+    parser.add_argument('--cut', required=True, choices=['rand', 'max'],
+                        help='Select graph cut type, could be rand or max.')
     args = parser.parse_args()
     
     batchSize = 50                         # size of one batch
@@ -138,6 +141,8 @@ if __name__ == '__main__':
         normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, relationFileName, nClusters)
         GW = initializeGW_clustering(Gepsilon, relationFileName, newW)
         W = normalizedNewW
+    # Read Feature Vectors from File
+    FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
     # Decide which algorithms to run.
     runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= False
     if args.alg:
@@ -179,8 +184,8 @@ if __name__ == '__main__':
      
     fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
-    FirstPartFileName = address + "/processed_events_shuffled_Part1_500.dat"
-    SecondPartFileName = address + "/processed_events_shuffled_Part2_500.dat"
+    FirstPartFileName = address + "/processed_events_shuffled_"+str(nClusters)+'_'+args.cut+'_part1.dat'
+    SecondPartFileName = address + "/processed_events_shuffled_"+str(nClusters)+'_'+args.cut+'_part2.dat'
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
     # put some new data in file for readability
@@ -252,7 +257,7 @@ if __name__ == '__main__':
                 article_id = int(article.strip(']'))
                 #print article_id
                 article_featureVector = FeatureVectors[article_id]
-
+                article_featureVector =np.array(article_featureVector ,dtype=float)
                 #print article_featureVector
                 currentArticles.append(article_id)
                 # CoLinUCB pick article
@@ -372,7 +377,7 @@ if __name__ == '__main__':
                 article_id = int(article.strip(']'))
                 #print article_id
                 article_featureVector = FeatureVectors[article_id]
-
+                article_featureVector =np.array(article_featureVector ,dtype=float)
                 #print article_featureVector
                 currentArticles.append(article_id)
                 # CoLinUCB pick article

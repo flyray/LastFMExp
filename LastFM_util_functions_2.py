@@ -29,7 +29,7 @@ def readFeatureVectorFile(FeatureVectorsFileName):
         for line in f:
             line = line.split("\t")            
             vec = line[1].strip('[]').strip('\n').split(';')
-            FeatureVectors[int(line[0])] = vec
+            FeatureVectors[int(line[0])] = np.array(vec)
     return FeatureVectors
 
 # This code simply reads one line from the source files of Yahoo!
