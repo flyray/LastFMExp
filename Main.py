@@ -259,10 +259,9 @@ if __name__ == '__main__':
                 article_id = int(article.strip(']'))
                 #print article_id
                 article_featureVector = FeatureVectors[article_id]
-
-                article_featureVector =np.array(article_featureVector ,dtype=float)
+                
                 #print article_featureVector
-                currentArticles.append(article_id)
+                currentArticles.append(article_id)  
                 # CoLinUCB pick article
                 if len(article_featureVector)==25:
                     #print 'Yes'
