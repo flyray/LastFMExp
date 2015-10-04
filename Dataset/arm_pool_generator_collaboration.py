@@ -66,7 +66,7 @@ fout_Part2 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+num+'_
 fout_Part2.write('userid	timestamp	arm_pool\n')
 for t in user_arm_tag:	
 	if cut_mx[label[t['uid']]] == 1:
-		print label[t['uid']]
+		#print label[t['uid']]
 		#print t['aid']
 		random_pool_1 = [t['aid']]+random.sample(user_arm_pool[t['uid']], 24)
 		#print random_pool_1
