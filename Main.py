@@ -91,7 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
                         metavar="FILE", type=lambda x: is_valid_file(parser, x))
     # Select algorithm.
-    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL.')
+    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL. No alg argument means Random.')
    
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True,
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     # Load previous running status. Haven't finished.
     parser.add_argument('--load', 
-                        help='Load previous running status.')
+                        help='Load previous running status. Such as Delicious_200_shuffled_Clustering_GOBLin_Diagnol_Opt__09_30_15_23_17 .')
 
     #Stop at certain line number. Haven't finished.
     parser.add_argument('--line', type=int,
@@ -162,28 +162,50 @@ if __name__ == '__main__':
         elif args.alg == 'ALL':
             runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=True
     else:
-        runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
+        args.alg = 'Random'
+        #runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
 
     fileSig = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'
 
 
     articles_random = randomStruct()
-    if runCoLinUCB:
-        CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
-    if runGOBLin:
-        GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
+    if args.load:
+        fileSig, timeRun = args.load.split('__')
+        fileSig = fileSig+'_'
+        timeRun = '_'+timeRun
+        print fileSig, timeRun        
+        with open(args.load +'.model', 'r') as fin:
+            obj = pickle.load(fin)
+        with open(args.load +'.txt', 'r') as fin:
+            finished_line = int(fin.readline().strip().split()[1])
+            print finished_line
+        if runCoLinUCB:
+            CoLinUCB_USERS = obj
+        if runGOBLin:
+            GOBLin_USERS = obj
+        if runLinUCB:
+            LinUCB_users = obj
+        if run_M_LinUCB:
+            M_LinUCB_users = obj
+        if run_Uniform_LinUCB:
+            Uniform_LinUCB_USERS = obj
+    else:
+        if runCoLinUCB:
+            CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
+        if runGOBLin:
+            GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
 
-    if runLinUCB:
-        LinUCB_users = []  
-        for i in range(OriginaluserNum):
-            LinUCB_users.append(LinUCBStruct(d, lambda_ ))
+        if runLinUCB:
+            LinUCB_users = []  
+            for i in range(OriginaluserNum):
+                LinUCB_users.append(LinUCBStruct(d, lambda_ ))
 
-    if run_M_LinUCB:
-        M_LinUCB_users = []
-        for i in range(userNum):
-            M_LinUCB_users.append(LinUCBStruct(d, lambda_))
-    if run_Uniform_LinUCB:
-        Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
+        if run_M_LinUCB:
+            M_LinUCB_users = []
+            for i in range(userNum):
+                M_LinUCB_users.append(LinUCBStruct(d, lambda_))
+        if run_Uniform_LinUCB:
+            Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
 
     fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
@@ -208,7 +230,7 @@ if __name__ == '__main__':
 
     print fileName, fileNameWrite
 
-    tsave = 60*60*1 # Time interval for saving model is one hour.
+    tsave = 60*60*46 # Time interval for saving model is one hour.
     tstart = time.time()
     save_flag = 0
     with open(fileName, 'r') as f:
@@ -217,6 +239,9 @@ if __name__ == '__main__':
             LinUCBTotalReward  = 0
         # reading file line ie observations running one at a time
         for i, line in enumerate(f, 1):
+            if args.load:
+                if i< finished_line:
+                    continue
             if runCoLinUCB:
                 CoLinReward = 0
             if runGOBLin:

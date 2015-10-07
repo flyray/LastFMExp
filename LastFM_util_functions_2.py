@@ -244,9 +244,9 @@ def is_number(s):
         return False
 
 def model_dump(obj, filename, linenum):
-    fout = open(filename +'.model', 'w')
-    pickle.dump(obj, fout)
-    fout.close()
     fout = open(filename +'.txt', 'w')
     fout.write("line\t"+str(linenum))
+    fout.close()
+    fout = open(filename +'.model', 'w')
+    pickle.dump(obj, fout)
     fout.close()
