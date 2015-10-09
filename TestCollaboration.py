@@ -59,25 +59,30 @@ if __name__ == '__main__':
             for i in range(userNum):
                 M_LinUCBTotalReward += M_LinUCB_users[i].reward    
 
-        print totalObservations
+        #print totalObservations
         recordedStats = [articles_random.reward]
         s = 'random '+str(articles_random.reward)
         if runCoLinUCB:
             s += '  CoLin '+str(CoLinUCB_USERS.reward)
+            recordedStats.append(CoLinUCBPicked)
             recordedStats.append(CoLinUCB_USERS.reward)
         if runGOBLin:
             s += '  GOBLin '+str(GOBLin_USERS.reward)
-            recordedStats.append(GOBLin_USERS.reward)
+            recordedStats.append(GOBLinPicked)
+            recordedStats.append(GOBLin_USERS.reward)            
         if runLinUCB:
-            s += '  LinUCB '+str(LinUCBTotalReward)
+            s += '  LinUCB '+str(LinUCBPicked)+' '+str(LinUCBTotalReward)
+            recordedStats.append(LinUCBPicked)
             recordedStats.append(LinUCBTotalReward)
         if run_M_LinUCB:
             s += '  M_LinUCB ' + str(M_LinUCBTotalReward)
+            recordedStats.append(M_LinUCBPicked)
             recordedStats.append(M_LinUCBTotalReward)
         if run_Uniform_LinUCB:
             s += ' Uniform_LinUCB ' + str(Uniform_LinUCB_USERS.reward)
+            recordedStats.append(Uniform_LinUCB_Picked)
             recordedStats.append(Uniform_LinUCB_USERS.reward)
-        print s         
+        #print s         
         # write to file
         save_to_file(fileNameWrite, recordedStats, tim) 
 
@@ -109,7 +114,7 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    batchSize = 50                         # size of one batch
+    batchSize = 1                         # size of one batch
     
     d = 25           # feature dimension
     alpha = 0.3     # control how much to explore
