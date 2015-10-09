@@ -110,6 +110,10 @@ if __name__ == '__main__':
     #Stop at certain line number. Haven't finished.
     parser.add_argument('--line', type=int,
                         help='Stop at certain line number, debug use.')
+
+    # Designate event file, default is processed_events_shuffled.dat
+    parser.add_argument('--event', 
+                        help='Designate event file. Default is processed_events_shuffled.dat')    
     args = parser.parse_args()
     
     batchSize = 50                          # size of one batch
@@ -164,8 +168,13 @@ if __name__ == '__main__':
     else:
         args.alg = 'Random'
         #runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
-
-    fileSig = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'
+    
+    if (args.event):
+        fileName = args.event
+    else:
+        fileName = address + "/processed_events_shuffled.dat"
+    
+    fileSig = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
 
 
     articles_random = randomStruct()
@@ -207,7 +216,6 @@ if __name__ == '__main__':
         if run_Uniform_LinUCB:
             Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
 
-    fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 

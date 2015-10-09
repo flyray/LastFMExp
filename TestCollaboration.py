@@ -106,6 +106,7 @@ if __name__ == '__main__':
     # Cut type.
     parser.add_argument('--cut', required=True, choices=['rand', 'max'],
                         help='Select graph cut type, could be rand or max.')
+    
     args = parser.parse_args()
     
     batchSize = 50                         # size of one batch
