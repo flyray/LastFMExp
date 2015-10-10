@@ -47,14 +47,14 @@ fin = open(sys.argv[2],'r')
 cut_rd = [int(x) for x in fin.readline().strip('[]\n').split(',')]
 cut_mx = [int(x) for x in fin.readline().strip('[]\n').split(',')]
 
-num = sys.argv[2].split('.')[-2]
+#num = sys.argv[2].split('.')[-2]
 
 
 
 #generate random arm_pool and write to file
-fout_Part1 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+num+'_rand_part1.dat','w')
+fout_Part1 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+'top100'+'_rand_part1.dat','w')
 fout_Part1.write('userid	timestamp	arm_pool\n')
-fout_Part2 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+num+'_rand_part2.dat','w')
+fout_Part2 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+'top100'+'_rand_part2.dat','w')
 fout_Part2.write('userid	timestamp	arm_pool\n')
 for t in user_arm_tag:	
 	if cut_rd[a.index(label[t['uid']])] == 1:
@@ -69,9 +69,9 @@ for t in user_arm_tag:
 fout_Part1.close()
 fout_Part2.close()
 	
-fout_Part1 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+num+'_max_part1.dat','w')
+fout_Part1 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+'top100'+'_max_part1.dat','w')
 fout_Part1.write('userid	timestamp	arm_pool\n')
-fout_Part2 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+num+'_max_part2.dat','w')
+fout_Part2 = open(sys.argv[1].split('/')[0]+'/processed_events_shuffled_'+'top100'+'_max_part2.dat','w')
 fout_Part2.write('userid	timestamp	arm_pool\n')
 for t in user_arm_tag:	
 	if cut_mx[a.index(label[t['uid']])] == 1:
