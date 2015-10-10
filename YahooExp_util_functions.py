@@ -65,20 +65,51 @@ def save_to_file(fileNameWrite, recordedStats, tim):
 
 
 
-def initializeGW(W, epsilon):   
+def initializeGW(W, epsilon):  
     n = len(W)
     #print 'W', W
-    G = W
+    G = np.zeros(shape = (n, n))
     for i in range(n):
         for j in range(n):
-            if G[i][j] > 0:
+            if W[i][j] > 0:
                 G[i][j] = 1
     L = csgraph.laplacian(G, normed = False)
-    I = np.identity(len(W))
+    I = np.identity(n)
     GW = I + epsilon*L
     print GW
     #showheatmap(GW)
+    
     return GW
+
+
+def initializeW(userFeatureVectors, sparsityLevel):
+    n = len(userFeatureVectors)
+    W = np.zeros(shape = (n, n))
+    
+    for i in range(n):
+            sSim = 0
+            for j in range(n):
+                sim = np.dot(userFeatureVectors[i], userFeatureVectors[j])
+                W[i][j] = sim
+                sSim += sim
+            
+            W[i] /= sSim
+    SparseW = W
+    #showheatmap(SparseW)
+    if sparsityLevel > 0 and sparsityLevel <n:
+        print 'Yesyesyes'
+        for i in range(n):
+            similarity = sorted(W[i], reverse = True)
+            threshold = similarity[sparsityLevel]
+            for j in range(n):
+                if W[i][j] <= threshold:
+                    SparseW[i][j] = 0
+            SparseW[i] /= sum(SparseW[i])
+    #print SparseW[1][19]
+    #showheatmap(SparseW)
+    #W = np.identity(n)
+    print 'SparseW', SparseW
+    return SparseW.T
     
 
 
@@ -111,7 +142,7 @@ def initializeW_opt(userFeatureVectors, sparsityLevel):
         if sum(SparseW[i])!=0:
             SparseW[i][i] = np.linalg.norm(SparseW[i])**2/sum(SparseW[i])
         SparseW[i] /=sum(SparseW[i])
-    print SparseW
+    print 'SparseW --Opt', SparseW
     #print SparseW[1][19]
     #showheatmap(SparseW)
     #W = np.identity(n)
