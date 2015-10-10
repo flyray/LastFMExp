@@ -111,6 +111,9 @@ if __name__ == '__main__':
     # Cut type.
     parser.add_argument('--cut', required=True, choices=['rand', 'max'],
                         help='Select graph cut type, could be rand or max.')
+    # Cut type.
+    parser.add_argument('--top100', action='store_true',
+                        help='Use top 100 setting.')
     
     args = parser.parse_args()
     
@@ -190,8 +193,9 @@ if __name__ == '__main__':
      
     fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
-    FirstPartFileName = address + "/processed_events_shuffled_"+str(nClusters)+'_'+args.cut+'_part1.dat'
-    SecondPartFileName = address + "/processed_events_shuffled_"+str(nClusters)+'_'+args.cut+'_part2.dat'
+    num = 'top100' if args.top100 else str(nClusters)
+    FirstPartFileName = address + "/processed_events_shuffled_"+num+'_'+args.cut+'_part1.dat'
+    SecondPartFileName = address + "/processed_events_shuffled_"+num+'_'+args.cut+'_part2.dat'
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
     # put some new data in file for readability
@@ -332,8 +336,8 @@ if __name__ == '__main__':
 
             
             # ar the batch has ended
-            if TrainningObservations%batchSize==0:
-                print 'TrainningObservations:', TrainningObservations
+            #if TrainningObservations%batchSize==0:
+            #    print 'TrainningObservations:', TrainningObservations
 
     with open(SecondPartFileName, 'r') as f2:
         f2.readline()
