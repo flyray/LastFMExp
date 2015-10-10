@@ -288,9 +288,7 @@ if __name__ == '__main__':
             if run_Uniform_LinUCB:
                 Uniform_LinUCB_maxPTA =  float('-inf')
                 Uniform_LinUCB_Picked = None
-           
             currentUserID =label[int(userID)] 
-
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
             for article in pool_articles:
@@ -303,7 +301,7 @@ if __name__ == '__main__':
                 # CoLinUCB pick article
                 if len(article_featureVector)==25:
                     #print 'Yes'
-                    if runCoLinUCB:
+                    if runCoLinUCB:                        
                         CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
                         #print article_id, CoLinUCB_pta
                         if CoLinUCB_maxPTA < CoLinUCB_pta:

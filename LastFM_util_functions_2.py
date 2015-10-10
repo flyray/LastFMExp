@@ -150,7 +150,7 @@ def initializeGW_label(Gepsilon ,n, relationFileName, label, diagnol):
     with open(relationFileName) as f:
         for line in f:
             line = line.split('\t')
-            if line[0] != 'userID':
+            if line[0] != 'userID' and label[int(line[0])]!=10000 and label[int(line[1])]!=10000: #10000 means not top 100 user.
                 W[label[int(line[0])]][label[int(line[1])]] += 1 
     # don't need it
     '''
@@ -173,7 +173,7 @@ def initializeW_label(n,relationFileName, label, diagnol, show_heatmap):
     with open(relationFileName) as f:
         for line in f:
             line = line.split('\t')
-            if line[0] != 'userID':                   
+            if line[0] != 'userID' and label[int(line[0])]!=10000 and label[int(line[1])]!=10000: #10000 means not top 100 user.
                 W[label[int(line[0])]][label[int(line[1])]] += 1     
     if show_heatmap:
         heatmap(W)
