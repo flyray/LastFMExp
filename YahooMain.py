@@ -83,6 +83,7 @@ if __name__ == '__main__':
         parser.add_argument('--userNum', dest = 'userNum', help = 'Set the userNum, can be 20, 40, 80, 160')
 
         parser.add_argument('--Sparsity', dest = 'SparsityLevel', help ='Set the SparsityLevel by choosing the top M most connected users, should be smaller than userNum, when equal to userNum, we are using a full connected graph')
+        parser.add_argument('--diag', dest="DiagType", help="Specify the setting of diagional setting, can be set as 'Orgin' or 'Opt' ") 
 
 
         args = parser.parse_args()
@@ -91,6 +92,7 @@ if __name__ == '__main__':
         clusterNum = int(args.userNum)
         SparsityLevel = int(args.SparsityLevel)
         yahooData_address = str(args.Yahoo_save_address)
+        DiagType = str(args.DiagType)
 
 
 	timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M') 	# the current data time
@@ -108,11 +110,14 @@ if __name__ == '__main__':
 	fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+str(clusterNum)+ '.dat')
 	userFeatureVectors = getClusters(fileNameWriteCluster)	
 	userNum = clusterNum
-	W = initializeW_opt(userFeatureVectors, SparsityLevel)   # Generate user relation matrix
-	GW = initializeGW(initializeW_opt(userFeatureVectors, SparsityLevel), epsilon)
+	if DiagType == 'Orgin':
+		W = initializeW(userFeatureVectors, SparsityLevel)
+	elif DiagType == 'Opt':
+		W = initializeW_opt(userFeatureVectors, SparsityLevel)   # Generate user relation matrix
+	GW = initializeGW(W , epsilon)
  	
 	articles_random = randomStruct()
-	CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, initializeW_opt(userFeatureVectors, SparsityLevel))
+	CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W )
 	GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
         LinUCB_users = []
 	for i in range(userNum):
