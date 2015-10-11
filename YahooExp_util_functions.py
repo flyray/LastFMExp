@@ -56,6 +56,18 @@ def parseLine(line):
         pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
         return tim, articleID, click, user_features, pool_articles
 
+# read line with userID instead of user features
+def parseLine_userID(line):
+        line = line.split("|")
+        
+        tim, articleID, click = line[0].strip().split(" ")
+        tim, articleID, click = int(tim), int(articleID), int(click)
+        userID = int(line[1].strip())
+        
+        pool_articles = [l.strip().split(" ") for l in line[2:]]
+        pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
+        return tim, articleID, click, userID, pool_articles
+
 def save_to_file(fileNameWrite, recordedStats, tim):
     with open(fileNameWrite, 'a+') as f:
         f.write('data') # the observation line starts with data;
