@@ -46,12 +46,12 @@ if __name__ == '__main__':
 			CoLinUCBCTR = CoLinUCB_USERS.learn_stats.updateCTR()
 			print totalObservations
 			print 'random', randomLearnCTR,'  CoLin', CoLinUCBCTR
-			recordedStats = [randomLearnCTR, CoLinUCBCTR]	
+			recordedStats = [randomLearnCTR, CoLinUCBCTR, CoLinUCB_USERS.learn_stats.accesses, CoLinUCB_USERS.learn_stats.clicks]	
 		if algName =='GOBLin':
 			GOBLinCTR = GOBLin_USERS.learn_stats.updateCTR()
 			print totalObservations
 			print 'random', randomLearnCTR,'  GOBLin', GOBLinCTR  	
-			recordedStats = [randomLearnCTR, GOBLinCTR]
+			recordedStats = [randomLearnCTR, GOBLinCTR, GOBLin_USERS.learn_stats.accesses, GOBLin_USERS.learn_stats.clicks]
 		if algName == 'LinUCB':
 			TotalLinUCBAccess = 0.0
 			TotalLinUCBClick = 0.0
@@ -67,10 +67,37 @@ if __name__ == '__main__':
 			print totalObservations
 			print 'random', randomLearnCTR,'	LinUCB', LinUCBCTR
 		
-			recordedStats = [randomLearnCTR,  LinUCBCTR]
-
-		# write to file
+			recordedStats = [randomLearnCTR,  LinUCBCTR, TotalLinUCBAccess, TotalLinUCBClick]
+			# write to file
 		save_to_file(fileNameWrite, recordedStats, tim) 
+	def WriteStat():
+		with open(fileNameWriteStatTP, 'a+') as f:
+			for key, val in articleTruePositve.items():
+				f.write(str(key) + ';'+str(val) + ',')
+			f.write('\n')
+		with open(fileNameWriteStatTN, 'a+') as f:
+			for key, val in articleTrueNegative.items():
+				f.write(str(key) + ';'+str(val) + ',')
+			f.write('\n')
+		with open(fileNameWriteStatFP, 'a+') as f:
+			for key, val in articleFalsePositive.items():
+				f.write(str(key) + ';'+str(val) + ',')
+			f.write('\n')
+
+
+	def calculateStat():
+		if click:		
+			for article in currentArticles:
+				if article == int(article_chosen):
+					articleTruePositve[int(article_chosen)] +=1
+				else:
+					articleTrueNegative[int(article)] +=1				
+		else:
+			for article in currentArticles:
+				if article == int(article_chosen):
+					articleFalsePositive[int(article_chosen)] +=1
+
+		
         
 
 
@@ -98,7 +125,8 @@ if __name__ == '__main__':
 	timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M') 	# the current data time
 	dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
 	fileSig = 'Opt'+str(clusterNum)+ 'SP'+ str(SparsityLevel)+algName
-	batchSize = 2000							# size of one batch
+	batchSize = 2000
+	statBatchSize = 20000							# size of one batch
 	
 	d = 5 	        # feature dimension
 	alpha = 0.3     # control how much to explore
@@ -106,6 +134,12 @@ if __name__ == '__main__':
 	epsilon = 0.3
     
 	totalObservations = 0
+
+	articleTruePositve = {}
+	articleFalseNegative = {}
+
+	articleTrueNegative = {}
+	articleFalsePositive = {}
 
 	fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+str(clusterNum)+ '.dat')
 	userFeatureVectors = getClusters(fileNameWriteCluster)	
@@ -127,10 +161,14 @@ if __name__ == '__main__':
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	
 		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
 
+		fileNameWriteStatTP = os.path.join(Yahoo_save_address, 'Stat_TP'+ fileSig + dataDay + timeRun + '.csv')
+		fileNameWriteStatTN = os.path.join(Yahoo_save_address, 'Stat_TN'+ fileSig + dataDay + timeRun + '.csv')
+		fileNameWriteStatFP = os.path.join(Yahoo_save_address, 'Stat_FP'+ fileSig + dataDay + timeRun + '.csv')
+
 		# put some new data in file for readability
 		with open(fileNameWrite, 'a+') as f:
-			f.write('\nNew Run at  ' + datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
-			f.write('\n, Time,RandomCTR;CoLinUCBCTR\n')
+			f.write('\nNewRunat  ' + datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
+			f.write('\n,Time,RandomCTR;'+ str(algName) + 'CTR;' + 'accesses;'+ 'clicks;' + '' +'\n')
 
 		print fileName, fileNameWrite
 		with open(fileName, 'r') as f:
@@ -157,7 +195,7 @@ if __name__ == '__main__':
                                 LinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
 
                                 for article in pool_articles:
-                                        article_id = article[0]
+                                        article_id = int(article[0])
                                         article_featureVector =np.asarray(article[1:6])
                                         currentArticles.append(article_id)
 	                                        # CoLinUCB pick article
@@ -180,6 +218,13 @@ if __name__ == '__main__':
                                                                 LinUCBPicked = article_id    # article picked by CoLinU
 	                                                        LinUCB_PickedfeatureVector = article_featureVector
 	                                                        LinUCB_maxPTA = LinUCB_pta
+                                for article in currentArticles:
+                                	if article not in articleTruePositve:
+                                            articleTruePositve[int(article_chosen)] = 0
+                                            articleTrueNegative[int(article_chosen)] = 0
+                                            articleFalsePositive[int(article_chosen)] = 0
+                                            articleFalseNegative[int(article_chosen)] = 0
+
                                
                                 # article picked by random strategy
                                 articles_random.learn_stats.addrecord(click)
@@ -187,16 +232,23 @@ if __name__ == '__main__':
 	                                if CoLinUCBPicked == article_chosen:
                                                 CoLinUCB_USERS.learn_stats.addrecord(click)
                                                 CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector, click, currentUserID)
+                                               	calculateStat()
+                                                
                                 if algName == 'GOBLin':
 	                            	if GOBLinPicked == article_chosen:
                                                 GOBLin_USERS.learn_stats.addrecord(click)
                                                 GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, click, currentUserID)
+                                                calculateStat()
                                 if algName == 'LinUCB':
                                 	if LinUCBPicked == article_chosen:
                                                 LinUCB_users[currentUserID].learn_stats.addrecord(click)
                                                 LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
+                                                calculateStat()
                                 # if the batch has ended
                                 if totalObservations%batchSize==0:
                                         printWrite()
+                                if totalObservations%statBatchSize==0:
+                                        WriteStat()
                         #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
                         printWrite()
+                        WriteStat()
