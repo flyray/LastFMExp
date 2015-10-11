@@ -289,6 +289,8 @@ if __name__ == '__main__':
                 Uniform_LinUCB_maxPTA =  float('-inf')
                 Uniform_LinUCB_Picked = None
             currentUserID =label[int(userID)] 
+            print userID
+            print currentUserID
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
             for article in pool_articles:
