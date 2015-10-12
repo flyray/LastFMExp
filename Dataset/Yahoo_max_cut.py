@@ -18,7 +18,7 @@ def initializeW_top80(userFeatureVectors, sparsityLevel):
 usernum = [(0, i) for i in range(160)]
 
 yahooData_address = sys.argv[1]
-dataDays = ['01']
+dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
 for dataDay in dataDays:
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.userID.statistic'
 		with open(fileName, 'r') as f:
