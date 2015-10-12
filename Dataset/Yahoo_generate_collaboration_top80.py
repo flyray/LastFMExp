@@ -4,7 +4,7 @@ import random
 
 usernum = [(0, i) for i in range(160)]
 
-yahooData_address = sys.argv[1].split('/')[0]
+yahooData_address = sys.argv[1][:-len(sys.argv[1].split('/')[-1])-1]
 dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
 for dataDay in dataDays:
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.userID.statistic'
