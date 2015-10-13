@@ -17,6 +17,13 @@ usernum.reverse()
 a = [x[1] for x in usernum]
 a = a[:80]
 
+with open('YahooKMeansModel/10kmeans_model160.dat', 'r') as fin:
+	kmeans = fin.read().split('\n')
+with open('YahooKMeansModel/10kmeans_model160.dat.80.max', 'w') as fout:
+	for x in a:
+		fout.write(kmeans[x]+'\n')
+
+
 with open(sys.argv[2],'r') as fin:
 	cut_rd = [int(x) for x in fin.readline().strip('[]\n').split(',')]
 	cut_mx = [int(x) for x in fin.readline().strip('[]\n').split(',')]
@@ -29,6 +36,7 @@ with open (sys.argv[1], 'r') as fin:
 		line = line.split("|")
 		userID = int(line[1])
 		if userID in a:
+			line[1] = str(a.index(userID))
 			if cut_mx[a.index(userID)] == 1:
 				fout_Part1.write('|'.join(line))
 			else:
