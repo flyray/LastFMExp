@@ -70,7 +70,7 @@ for dataDay in dataDays:
 			line = line.split("|")
 			userID = int(line[1])
 			if userID in p:
-				line[1] = str(a.index(userID))
+				line[1] = str(p.index(userID))
 				if p.index(userID) <40:
 					fout_Part1.write('|'.join(line))
 				else:
