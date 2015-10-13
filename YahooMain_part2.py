@@ -112,6 +112,7 @@ if __name__ == '__main__':
         parser.add_argument('--Sparsity', dest = 'SparsityLevel', help ='Set the SparsityLevel by choosing the top M most connected users, should be smaller than userNum, when equal to userNum, we are using a full connected graph')
         parser.add_argument('--diag', dest="DiagType", help="Specify the setting of diagional setting, can be set as 'Orgin' or 'Opt' ") 
       	parser.add_argument('--userID', action='store_true', help="Read userID from logs instead of user feature vector.") 
+      	parser.add_argument('--max', action='store_true', help="Max means max number of users in a cluster. Otherwise max observations in cluster.") 
       	
         args = parser.parse_args()
     
@@ -158,10 +159,10 @@ if __name__ == '__main__':
 		LinUCB_users.append(LinUCBStruct(d, lambda_ ))
 	
 	for dataDay in dataDays:
-		if args.userID:
-			fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.userID'
+		if args.max:
+			fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay + '.userID.max.part2'
 		else:
-			fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	
+			fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay + '.userID.max_observation.part2'
 		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
 
 		fileNameWriteStatTP = os.path.join(Yahoo_save_address, 'Stat_TP'+ fileSig + dataDay + timeRun + '.csv')
