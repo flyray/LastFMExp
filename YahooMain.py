@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
         parser.add_argument('--Sparsity', dest = 'SparsityLevel', help ='Set the SparsityLevel by choosing the top M most connected users, should be smaller than userNum, when equal to userNum, we are using a full connected graph')
         parser.add_argument('--diag', dest="DiagType", help="Specify the setting of diagional setting, can be set as 'Orgin' or 'Opt' ") 
-
+      	parser.add_argument('--userID', action='store_true', help="Read userID from logs instead of user feature vector.") 
 
         args = parser.parse_args()
     
@@ -158,7 +158,10 @@ if __name__ == '__main__':
 		LinUCB_users.append(LinUCBStruct(d, lambda_ ))
 	
 	for dataDay in dataDays:
-		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	
+		if args.userID:
+			fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.userID'
+		else:
+			fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	
 		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
 
 		fileNameWriteStatTP = os.path.join(Yahoo_save_address, 'Stat_TP'+ fileSig + dataDay + timeRun + '.csv')
@@ -174,11 +177,13 @@ if __name__ == '__main__':
 		with open(fileName, 'r') as f:
 			# reading file line ie observations running one at a time
 			for line in f:
-				totalObservations +=1
-
-				tim, article_chosen, click, user_features, pool_articles = parseLine(line)
-				currentUser_featureVector = user_features[:-1]
-				currentUserID = getIDAssignment(np.asarray(currentUser_featureVector), userFeatureVectors)                
+				totalObservations +=1			
+				if args.userID:
+					tim, article_chosen, click, currentUserID, pool_articles = parseLine_userID(line)								
+				else:
+					tim, article_chosen, click, user_features, pool_articles = parseLine(line)
+					currentUser_featureVector = user_features[:-1]
+					currentUserID = getIDAssignment(np.asarray(currentUser_featureVector), userFeatureVectors)                
                 
                                 #-----------------------------Pick an article (CoLinUCB, LinUCB, Random)-------------------------
                                 currentArticles = []
