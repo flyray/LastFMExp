@@ -141,8 +141,10 @@ if __name__ == '__main__':
 
 	articleTrueNegative = {}
 	articleFalsePositive = {}
-
-	fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+str(clusterNum)+ '.dat')
+	if args.max:
+		fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+'160'+ '.dat'+'.80.max')
+	else:
+		fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+'160'+ '.dat'+'.80.max_observation')
 	userFeatureVectors = getClusters(fileNameWriteCluster)	
 	userNum = clusterNum
 	if DiagType == 'Orgin':
@@ -301,10 +303,10 @@ if __name__ == '__main__':
 	                                                        LinUCB_maxPTA = LinUCB_pta
                                 for article in currentArticles:
                                 	if article not in articleTruePositve:
-                                            articleTruePositve[int(article_chosen)] = 0
-                                            articleTrueNegative[int(article_chosen)] = 0
-                                            articleFalsePositive[int(article_chosen)] = 0
-                                            articleFalseNegative[int(article_chosen)] = 0
+                                            articleTruePositve[int(article)] = 0
+                                            articleTrueNegative[int(article)] = 0
+                                            articleFalsePositive[int(article)] = 0
+                                            articleFalseNegative[int(article)] = 0
 
                                
                                 # article picked by random strategy
