@@ -32,8 +32,8 @@ dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
 for dataDay in dataDays:
 	fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.userID'
 
-	fout_Part1 = open(sys.argv[1]+'.max.part1','w')
-	fout_Part2 = open(sys.argv[1]+'.max.part2','w')
+	fout_Part1 = open(fileName+'.max.part1','w')
+	fout_Part2 = open(fileName+'.max.part2','w')
 
 	with open (fileName, 'r') as fin:
 		for line in fin:	
