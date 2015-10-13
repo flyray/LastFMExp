@@ -142,7 +142,10 @@ if __name__ == '__main__':
 	articleTrueNegative = {}
 	articleFalsePositive = {}
 
-	fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+str(clusterNum)+ '.dat')
+	if args.max:
+		fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+'160'+ '.dat'+'.80.max')
+	else:
+		fileNameWriteCluster = os.path.join(Kmeansdata_address, '10kmeans_model'+'160'+ '.dat'+'.80.max_observation')
 	userFeatureVectors = getClusters(fileNameWriteCluster)	
 	userNum = clusterNum
 	if DiagType == 'Orgin':
