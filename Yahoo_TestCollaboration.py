@@ -251,6 +251,26 @@ if __name__ == '__main__':
                                                 LinUCB_users[currentUserID].learn_stats.addrecord(click)
                                                 LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
 
+	for dataDay in dataDays:
+		if args.max:
+			if args.userID:
+				FirstPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.userID.max.part1'
+				SecondPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.userID.max.part2'
+			else:
+				FirstPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.max.part1'
+				SecondPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.max.part2'
+		else:
+			if args.userID:
+				FirstPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.userID.max_observation.part1'
+				SecondPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.userID.max_observation.part2'
+			else:
+				FirstPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.max_observation.part1'
+				SecondPartFileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay +'.max_observation.part2'
+		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
+
+		fileNameWriteStatTP = os.path.join(Yahoo_save_address, 'Stat_TP'+ fileSig + dataDay + timeRun + '.csv')
+		fileNameWriteStatTN = os.path.join(Yahoo_save_address, 'Stat_TN'+ fileSig + dataDay + timeRun + '.csv')
+		fileNameWriteStatFP = os.path.join(Yahoo_save_address, 'Stat_FP'+ fileSig + dataDay + timeRun + '.csv')
 
 		with open(SecondPartFileName, 'r') as f:
 			# reading file line ie observations running one at a time
