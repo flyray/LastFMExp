@@ -109,11 +109,11 @@ if __name__ == '__main__':
                         help='Select Dataset to run, could be LastFM or Delicious.')
 
     # Cut type.
-    parser.add_argument('--cut', required=True, choices=['rand', 'max'],
-                        help='Select graph cut type, could be rand or max.')
+    parser.add_argument('--cut', required=True, choices=['rand', 'max', 'max_observation'],
+                        help='Select graph cut type, could be rand, max or max_observation.')
     # Cut type.
-    parser.add_argument('--top100', action='store_true',
-                        help='Use top 100 setting.')
+    parser.add_argument('--select_node', choices=['top100','select100'],
+                        help='Select top 100 or select 50 from bottom 100 with top 50.')
     
     args = parser.parse_args()
     
@@ -193,7 +193,13 @@ if __name__ == '__main__':
      
     fileName = address + "/processed_events_shuffled.dat"
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
-    num = 'top100' if args.top100 else str(nClusters)
+    if args.select_node:
+        if args.select_node=='top100':
+            num = 'top100'
+        if args.select_node=='select100':
+            num = 'select100'    
+    else:
+        num = str(nClusters)
     FirstPartFileName = address + "/processed_events_shuffled_"+num+'_'+args.cut+'_part1.dat'
     SecondPartFileName = address + "/processed_events_shuffled_"+num+'_'+args.cut+'_part2.dat'
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
@@ -260,7 +266,8 @@ if __name__ == '__main__':
                 Uniform_LinUCB_Picked = None
            
             currentUserID =label[int(userID)] 
-
+            print userID
+            print currentUserID
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
             for article in pool_articles:
@@ -380,7 +387,6 @@ if __name__ == '__main__':
                 Uniform_LinUCB_Picked = None
            
             currentUserID =label[int(userID)] 
-
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
             for article in pool_articles:
