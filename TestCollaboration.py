@@ -198,7 +198,7 @@ if __name__ == '__main__':
             num = 'top100'
         if args.select_node=='select100':
             num = 'select100'    
-    else:
+    else:  
         num = str(nClusters)
     FirstPartFileName = address + "/processed_events_shuffled_"+num+'_'+args.cut+'_part1.dat'
     SecondPartFileName = address + "/processed_events_shuffled_"+num+'_'+args.cut+'_part2.dat'
@@ -266,8 +266,8 @@ if __name__ == '__main__':
                 Uniform_LinUCB_Picked = None
            
             currentUserID =label[int(userID)] 
-            print userID
-            print currentUserID
+            #print userID
+            #print currentUserID
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
             for article in pool_articles:
