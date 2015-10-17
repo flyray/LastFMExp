@@ -88,14 +88,14 @@ if __name__ == '__main__':
 	def calculateStat():
 		if click:		
 			for article in currentArticles:
-				if article == int(article_chosen):
-					articleTruePositve[int(article_chosen)] +=1
+				if article == article_chosen:
+					articleTruePositve[article_chosen] +=1
 				else:
-					articleTrueNegative[int(article)] +=1				
+					articleTrueNegative[article] +=1				
 		else:
 			for article in currentArticles:
-				if article == int(article_chosen):
-					articleFalsePositive[int(article_chosen)] +=1
+				if article == article_chosen:
+					articleFalsePositive[article_chosen] +=1
 
 		
         
@@ -124,9 +124,9 @@ if __name__ == '__main__':
 
 	timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M') 	# the current data time
 	dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
-	fileSig = 'Opt'+str(clusterNum)+ 'SP'+ str(SparsityLevel)+algName
+	fileSig = str(DiagType)+str(clusterNum)+ 'SP'+ str(SparsityLevel)+algName
 	batchSize = 2000
-	statBatchSize = 20000							# size of one batch
+	statBatchSize = 2000							# size of one batch
 	
 	d = 5 	        # feature dimension
 	alpha = 0.3     # control how much to explore
@@ -220,10 +220,10 @@ if __name__ == '__main__':
 	                                                        LinUCB_maxPTA = LinUCB_pta
                                 for article in currentArticles:
                                 	if article not in articleTruePositve:
-                                            articleTruePositve[int(article_chosen)] = 0
-                                            articleTrueNegative[int(article_chosen)] = 0
-                                            articleFalsePositive[int(article_chosen)] = 0
-                                            articleFalseNegative[int(article_chosen)] = 0
+                                            articleTruePositve[article] = 0
+                                            articleTrueNegative[article] = 0
+                                            articleFalsePositive[article] = 0
+                                            articleFalseNegative[article] = 0
 
                                
                                 # article picked by random strategy
