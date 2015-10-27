@@ -33,6 +33,23 @@ def getClusters(fileNameWriteCluster):
             clusters.append(np.asarray(vec))
         return np.asarray(clusters)
 
+def getArticleDic(fileNameRead):
+    with open(fileNameRead, 'r') as f:
+        articleDict = {}
+        l = 0
+        for line in f:
+            featureVec = []
+            if l >=1:
+                line = line.split(';')
+                word = line[1].split('  ')
+                if len(word)==5:
+                    for i in range(5):
+                        featureVec.append(float(word[i]))
+                if int(line[0]) not in articleDict:
+                    articleDict[int(line[0])] = np.asarray(featureVec)
+    #print  ArticleFeatures
+    return articleDict
+
 # get cluster assignment of V, M is cluster centroids
 def getIDAssignment(V, M):
         MinDis = float('+inf')

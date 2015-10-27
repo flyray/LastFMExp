@@ -22,7 +22,7 @@ datasets_address = '/if15/qw2ky/MyResearch/datasets/'  # should be modified acco
 #datasets_address = '/home/qingyun/Dropbox/workspace/datasets'
 #yahoo_address = os.path.join(datasets_address, "R6")
 
-Kmeansdata_address = './Dataset/YahooKMeansModel'
+Kmeansdata_address = './Dataset/Yahoo/YahooKMeansModel'
 LastFM_address = './Dataset/hetrec2011-lastfm-2k'
 Delicious_address = './Dataset/hetrec2011-delicious-2k'
 
