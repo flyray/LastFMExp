@@ -42,6 +42,7 @@ class GOBLinSharedStruct:
 		mean = np.dot(np.transpose(self.theta), CoFeaV)
 		var = np.sqrt( np.dot( np.dot(CoFeaV, self.AInv) , CoFeaV))
 		pta = mean + alpha * var
+		#return round(pta,12)
 		return pta
 	
 # inherite from CoLinUCBAlgorithm

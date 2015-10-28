@@ -42,11 +42,13 @@ def getArticleDic(fileNameRead):
             if l >=1:
                 line = line.split(';')
                 word = line[1].split('  ')
+                #print word
                 if len(word)==5:
                     for i in range(5):
                         featureVec.append(float(word[i]))
-                if int(line[0]) not in articleDict:
-                    articleDict[int(line[0])] = np.asarray(featureVec)
+                    if int(line[0]) not in articleDict:
+                        articleDict[int(line[0])] = np.asarray(featureVec)
+            l +=1
     #print  ArticleFeatures
     return articleDict
 
@@ -118,7 +120,7 @@ def initializeGW(W, epsilon):
 def initializeW(userFeatureVectors, sparsityLevel):
     n = len(userFeatureVectors)
     W = np.zeros(shape = (n, n))
-    
+
     for i in range(n):
             sSim = 0
             for j in range(n):
@@ -141,6 +143,7 @@ def initializeW(userFeatureVectors, sparsityLevel):
     #print SparseW[1][19]
     #showheatmap(SparseW)
     #W = np.identity(n)
+    #SparseW = np.identity(n)  # Debug
     print 'SparseW', SparseW
     return SparseW.T
     

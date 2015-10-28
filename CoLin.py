@@ -22,7 +22,6 @@ class CoLinUCBUserSharedStruct(object):
 		pass
 	
 	def getProb(self, alpha, articleFeatureVector, userID):
-		#print userID
 		TempFeatureV = np.zeros(len(articleFeatureVector)*self.userNum)
 		TempFeatureV[int(userID)*self.d:(int(userID)+1)*self.d] = np.asarray(articleFeatureVector)
 		#print self.CoTheta.T[userID]
@@ -32,6 +31,7 @@ class CoLinUCBUserSharedStruct(object):
 		mean = np.dot(self.CoTheta.T[userID], articleFeatureVector)
 		var = np.sqrt(np.dot(np.dot(TempFeatureV, self.CCA), TempFeatureV))
 		pta = mean + alpha * var
+		#return round(pta,12)
 		return pta
 
 
