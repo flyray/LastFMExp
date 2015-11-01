@@ -33,6 +33,25 @@ def getClusters(fileNameWriteCluster):
             clusters.append(np.asarray(vec))
         return np.asarray(clusters)
 
+def getArticleDic(fileNameRead):
+    with open(fileNameRead, 'r') as f:
+        articleDict = {}
+        l = 0
+        for line in f:
+            featureVec = []
+            if l >=1:
+                line = line.split(';')
+                word = line[1].split('  ')
+                #print word
+                if len(word)==5:
+                    for i in range(5):
+                        featureVec.append(float(word[i]))
+                    if int(line[0]) not in articleDict:
+                        articleDict[int(line[0])] = np.asarray(featureVec)
+            l +=1
+    #print  ArticleFeatures
+    return articleDict
+
 # get cluster assignment of V, M is cluster centroids
 def getIDAssignment(V, M):
         MinDis = float('+inf')
@@ -56,17 +75,21 @@ def parseLine(line):
         pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
         return tim, articleID, click, user_features, pool_articles
 
+
 # read line with userID instead of user features
-def parseLine_userID(line):
+def parseLine_ID(line):
         line = line.split("|")
         
         tim, articleID, click = line[0].strip().split(" ")
         tim, articleID, click = int(tim), int(articleID), int(click)
+        #user_ID = int(line[1])
+        
         userID = int(line[1].strip())
         
         pool_articles = [l.strip().split(" ") for l in line[2:]]
         pool_articles = np.array([[int(l[0])] + [float(x.split(':')[1]) for x in l[1:]] for l in pool_articles])
         return tim, articleID, click, userID, pool_articles
+
 
 def save_to_file(fileNameWrite, recordedStats, tim):
     with open(fileNameWrite, 'a+') as f:
@@ -97,7 +120,7 @@ def initializeGW(W, epsilon):
 def initializeW(userFeatureVectors, sparsityLevel):
     n = len(userFeatureVectors)
     W = np.zeros(shape = (n, n))
-    
+
     for i in range(n):
             sSim = 0
             for j in range(n):
@@ -120,6 +143,7 @@ def initializeW(userFeatureVectors, sparsityLevel):
     #print SparseW[1][19]
     #showheatmap(SparseW)
     #W = np.identity(n)
+    #SparseW = np.identity(n)  # Debug
     print 'SparseW', SparseW
     return SparseW.T
     
