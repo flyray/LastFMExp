@@ -235,6 +235,8 @@ if __name__ == '__main__':
                                                                 LinUCBPicked = article_id    # article picked by CoLinU
 	                                                        LinUCB_PickedfeatureVector = article_featureVector
 	                                                        LinUCB_maxPTA = LinUCB_pta
+					print article_id, LinUCB_pta
+				time.sleep(1)
                                 for article in currentArticles:
                                 	if article not in articleTruePositve:
                                             articleTruePositve[article] = 0
@@ -262,7 +264,9 @@ if __name__ == '__main__':
                                                 LinUCB_USERS.updateParameters(UniformLinUCB_PickedfeatureVector, click)
                                                 calculateStat()
                                 if algName == 'LinUCB':
+					print 'Picked', LinUCBPicked, click,LinUCB_maxPTA, article_chosen
                                 	if LinUCBPicked == article_chosen:
+						
                                                 LinUCB_users[currentUserID].learn_stats.addrecord(click)
                                                 LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
                                                 calculateStat()
