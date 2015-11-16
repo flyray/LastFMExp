@@ -32,8 +32,8 @@ class CLUBUserStruct(LinUCBUserStruct):
 			if clusters[i] == clusters[userID]:
 				self.CA += float(Graph[userID,i])*(users[i].A - self.I)
 				self.Cb += float(Graph[userID,i])*users[i].b
-				self.CAInv = np.linalg.inv(self.CA)
-				self.CTheta = np.dot(self.CAInv,self.Cb)
+		self.CAInv = np.linalg.inv(self.CA)
+		self.CTheta = np.dot(self.CAInv,self.Cb)
 
 	def getProb(self, alpha, article_FeatureVector,time):
 		mean = np.dot(self.CTheta, article_FeatureVector)

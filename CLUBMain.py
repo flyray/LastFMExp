@@ -13,10 +13,7 @@ from scipy.spatial import distance
 #from YahooExp_util_functions import getClusters, getIDAssignment, parseLine, save_to_file, initializeW, vectorize, matrixize, articleAccess
 from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeGW, parseLine, save_to_file, initializeW_clustering, initializeGW_clustering
 #from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
-
-from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from LinUCB import LinUCBUserStruct
-from GOBLin import GOBLinSharedStruct
 from CLUB import *
 
 # structure to save data from random strategy as mentioned in LiHongs paper
@@ -29,22 +26,6 @@ class randomStruct:
     def __init__(self):
         self.reward = 0
 
-# structure to save data from LinUCB strategy
-class LinUCBStruct(LinUCBUserStruct):
-    def __init__(self, featureDimension, lambda_):
-        LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_)
-        self.reward = 0
-
-# structure to save data from CoLinUCB strategy
-class CoLinUCBStruct(AsyCoLinUCBUserSharedStruct):
-    def __init__(self, featureDimension, lambda_, userNum, W):
-        AsyCoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
-        self.reward = 0  
-
-class GOBLinStruct(GOBLinSharedStruct):
-    def __init__(self, featureDimension, lambda_, userNum, W):
-        GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
-        self.reward = 0
     
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -179,7 +160,7 @@ if __name__ == '__main__':
     else:
         fileName = address + "/processed_events_shuffled.dat"
     
-    fileSig = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
+    fileSig = args.dataset+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
 
 
     articles_random = randomStruct()
@@ -224,8 +205,6 @@ if __name__ == '__main__':
     save_flag = 0
     with open(fileName, 'r') as f:
         f.readline()
-        if runLinUCB:
-            LinUCBTotalReward  = 0
         # reading file line ie observations running one at a time
         for i, line in enumerate(f, 1):
             if args.load:
@@ -233,6 +212,8 @@ if __name__ == '__main__':
                     continue
             if runCLUB:
                 CLUBReward = 0
+            if runLinUCB:
+                LinUCBReward = 0
 
             totalObservations +=1
             userID, tim, pool_articles = parseLine(line)  
@@ -245,8 +226,8 @@ if __name__ == '__main__':
                 #print article_id
                 article_featureVector = FeatureVectors[article_id]
                 article_featureVector =np.array(article_featureVector ,dtype=float)
-                currentArticles.append(article_id)
                 if len(article_featureVector)==25:
+                    currentArticles.append(article_id)
                     ArticlePOOL.append(Article(article_id,article_featureVector))             
             if runCLUB:
                 CLUB_PickedfeatureVector, CLUBPicked= CLUB.decide(ArticlePOOL,userID)
