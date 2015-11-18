@@ -10,9 +10,9 @@ import sys
 from scipy.sparse import csgraph
 from scipy.spatial import distance
 from YahooExp_util_functions import *
+#from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
+from CoLin_Faster import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 
-
-from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from GOBLin import GOBLinSharedStruct
 from LinUCB import LinUCBUserStruct
 
