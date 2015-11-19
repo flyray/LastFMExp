@@ -43,7 +43,7 @@ class AsyCoLinUCBUserSharedStruct(CoLinUCBUserSharedStruct):
 		#self.A += np.outer(X, X)	
 		self.b += click*X
 
-		self.AInv = self.AInv - (self.AInv*X*np.transpose(X)*self.AInv)/(1.0+np.transpose(X)*self.AInv*X)
+		self.AInv = self.AInv - np.dot(self.AInv,np.dot(np.outer(X,X),self.AInv))/float(1.0+np.dot(np.dot(np.transpose(X), self.AInv),X))
 
 		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(articlePicked_FeatureVector)) 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
