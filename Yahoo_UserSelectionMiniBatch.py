@@ -180,7 +180,7 @@ if __name__ == '__main__':
 			# reading file line ie observations running one at a time
 			userSelectionMiniBatch_Counter =0
 			MiniBatch_Lines = []
-			
+			t1 = datetime.datetime.now()
 			for line in f:
 				tim, article_chosen, click, currentUserID, pool_articles = parseLine_ID(line)
 				articles_random.learn_stats.addrecord(click)
@@ -308,6 +308,8 @@ if __name__ == '__main__':
 					
 				# if the batch has ended
 				if totalObservations%batchSize==0:
+					t2 = datetime.datetime.now()
+					print t2-t1
 					printWrite()
 				'''
 				if totalObservations%statBatchSize==0:
