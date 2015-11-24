@@ -99,8 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL. No alg argument means Random.')
    
     # Designate relation matrix diagnol.
-    parser.add_argument('--diagnol', dest='diagnol', requierd=True,
-                        help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
+    parser.add_argument('--diagnol', dest='diagnol', required=True, help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
     # Whether show heatmap of relation matrix.
     parser.add_argument('--showheatmap', action='store_true',
                         help='Show heatmap of relation matrix.') 
