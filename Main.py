@@ -99,7 +99,7 @@ if __name__ == '__main__':
     parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL. No alg argument means Random.')
    
     # Designate relation matrix diagnol.
-    parser.add_argument('--diagnol', dest='diagnol', required=True,
+    parser.add_argument('--diagnol', dest='diagnol', requierd=True,
                         help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
     # Whether show heatmap of relation matrix.
     parser.add_argument('--showheatmap', action='store_true',
@@ -289,8 +289,6 @@ if __name__ == '__main__':
                 Uniform_LinUCB_maxPTA =  float('-inf')
                 Uniform_LinUCB_Picked = None
             currentUserID =label[int(userID)] 
-            print userID
-            print currentUserID
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
             for article in pool_articles:
