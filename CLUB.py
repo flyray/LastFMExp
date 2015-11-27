@@ -16,6 +16,7 @@ class CLUBUserStruct(LinUCBUserStruct):
 		self.CBPrime = 0
 	def updateParameters(self, articlePicked_FeatureVector, click,alpha_2):
 		#LinUCBUserStruct.updateParameters(self, articlePicked_FeatureVector, click)
+		#alpha_2 = 1
 		self.A += np.outer(articlePicked_FeatureVector,articlePicked_FeatureVector)
 		self.b += articlePicked_FeatureVector*click
 		self.AInv = np.linalg.inv(self.A)
@@ -42,7 +43,7 @@ class CLUBUserStruct(LinUCBUserStruct):
 		return pta
 
 class CLUBAlgorithm(N_LinUCBAlgorithm):
-	def __init__(self,dimension,alpha,lambda_,n):
+	def __init__(self,dimension,alpha,lambda_,n,alpha_2):
 		self.time = 0
 		#N_LinUCBAlgorithm.__init__(dimension = dimension, alpha=alpha,lambda_ = lambda_,n=n)
 		self.users = []
@@ -52,6 +53,7 @@ class CLUBAlgorithm(N_LinUCBAlgorithm):
 
 		self.dimension = dimension
 		self.alpha = alpha
+		self.alpha_2 = alpha_2
 		self.Graph = np.ones([n,n]) 
 		self.clusters = []
 		g = csr_matrix(self.Graph)
@@ -73,16 +75,19 @@ class CLUBAlgorithm(N_LinUCBAlgorithm):
 
 		return featureVectorPicked, articlePicked
 	def updateParameters(self, featureVector, click,userID):
-		self.users[userID].updateParameters(featureVector, click, self.alpha)
-	def updateGraphClusters(self,userID):
+		self.users[userID].updateParameters(featureVector, click, self.alpha_2)
+	def updateGraphClusters(self,userID, binaryRatio):
 		n = len(self.users)
 		for j in range(n):
-			ratio = float(np.linalg.norm(self.users[userID].UserTheta - self.users[j].UserTheta,1))/float(self.users[userID].CBPrime + self.users[j].CBPrime)
+			ratio = float(np.linalg.norm(self.users[userID].UserTheta - self.users[j].UserTheta,2))/float(self.users[userID].CBPrime + self.users[j].CBPrime)
 			if ratio > 1:
 				ratio = 0
+			elif binaryRatio==True:
+				ratio = 1
 			self.Graph[userID][j] = ratio
 			self.Graph[j][userID] = self.Graph[userID][j]
 		N_components, component_list = connected_components(csr_matrix(self.Graph))
+		print 'N_components:',N_components
 		self.clusters = component_list
 
 

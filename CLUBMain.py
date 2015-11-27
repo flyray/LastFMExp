@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL. No alg argument means Random.')
    
     # Designate relation matrix diagnol.
-    parser.add_argument('--diagnol', dest='diagnol', required=True,
+    parser.add_argument('--diagnol', dest='diagnol', 
                         help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
     # Whether show heatmap of relation matrix.
     parser.add_argument('--showheatmap', action='store_true',
@@ -86,6 +86,15 @@ if __name__ == '__main__':
     # Dataset.
     parser.add_argument('--dataset', required=True, choices=['LastFM', 'Delicious'],
                         help='Select Dataset to run, could be LastFM or Delicious.')
+
+    parser.add_argument('--binaryRatio', required=True, choices=['True', 'False'],
+                        help='Select the way of summation(If binaryRatio is True, we do direct summation else we do weighted summation(weighted by the ratio))')
+
+    parser.add_argument('--alpha', required=True,
+                        help='Tunable parameter in explore-exploition')
+
+    parser.add_argument('--alpha_2', required=True, 
+                        help='Tunable parameter in cluster update')
 
     # Load previous running status. Haven't finished.
     parser.add_argument('--load', 
@@ -101,9 +110,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     batchSize = 1                          # size of one batch
+    binaryRatio = args.binaryRatio
+    alpha = float(args.alpha)
+    alpha_2 = float(args.alpha_2)
     
     d = 25           # feature dimension
-    alpha = 0.3     # control how much to explore
+    #alpha = 0.3     # control how much to explore
     lambda_ = 0.2   # regularization used in matrix A
     Gepsilon = 0.3   # Parameter in initializing GW
     
@@ -160,7 +172,7 @@ if __name__ == '__main__':
     else:
         fileName = address + "/processed_events_shuffled.dat"
     
-    fileSig = args.dataset+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
+    fileSig = args.dataset+'_'+args.alg+'_'+'alpha'+args.alpha+'_alpha2'+args.alpha_2 +'_'+args.binaryRatio+'_'+fileName.split('/')[3]+'_'
 
 
     articles_random = randomStruct()
@@ -185,7 +197,7 @@ if __name__ == '__main__':
             for i in range(OriginaluserNum):
                 LinUCB_users.append(LinUCBStruct(d, lambda_ ))
         if runCLUB:
-            CLUB =CLUBAlgorithm(d,alpha, lambda_, OriginaluserNum)
+            CLUB =CLUBAlgorithm(d,alpha, lambda_, OriginaluserNum,alpha_2)
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
@@ -240,7 +252,7 @@ if __name__ == '__main__':
                     CLUB.users[int(userID)].reward +=1
                     CLUBReward = 1
                 CLUB.updateParameters(CLUB_PickedfeatureVector, CLUBReward,userID)
-                CLUB.updateGraphClusters(userID)
+                CLUB.updateGraphClusters(userID,binaryRatio)
                 
                 
             save_flag = 0
