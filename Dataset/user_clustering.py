@@ -26,12 +26,12 @@ clustering_algorithms = [ms]
 
 for nClusters in [50, 100, 200]:
     spc = cluster.SpectralClustering(n_clusters=nClusters, affinity="nearest_neighbors")
-    clustering_names.append('SpectralClustering'+str(nClusters))
+    clustering_names.append('SpectralClustering.'+str(nClusters))
     clustering_algorithms.append(spc)
 
 for nClusters in [50, 100, 200]:
     kmeans = cluster.KMeans(n_clusters=nClusters)
-    clustering_names.append('KMeans'+str(nClusters))
+    clustering_names.append('KMeans.'+str(nClusters))
     clustering_algorithms.append(kmeans)
 
 for name, algorithm in zip(clustering_names, clustering_algorithms):
@@ -41,7 +41,7 @@ for name, algorithm in zip(clustering_names, clustering_algorithms):
         t1 = time.time()
         print (name, t1-t0)
         label = algorithm.labels_
-        with open(os.path.join(save_path, name)+'.cluster','w') as f:
+        with open(os.path.join(save_path, name),'w') as f:
             for i in range(len(label)):
                 f.write(str(label[i])+'\n')
 
