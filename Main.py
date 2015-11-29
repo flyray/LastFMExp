@@ -178,7 +178,7 @@ if __name__ == '__main__':
     else:
         fileName = address + "/processed_events_shuffled.dat"
     
-    fileSig = args.dataset+'_'+args.clusterfile.name.split('.')[0]+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
+    fileSig = args.dataset+'_'+args.clusterfile.name.split('/')[-1]+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
 
 
     articles_random = randomStruct()
