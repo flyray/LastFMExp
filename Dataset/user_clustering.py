@@ -41,7 +41,7 @@ for name, algorithm in zip(clustering_names, clustering_algorithms):
         t1 = time.time()
         print (name, t1-t0)
         label = algorithm.labels_
-        with open(os.join(path, name)+'.cluster','w') as f:
+        with open(os.path.join(path, name)+'.cluster','w') as f:
             for i in range(len(label)):
                 f.write(str(label[i])+'\n')
 
