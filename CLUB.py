@@ -82,8 +82,9 @@ class CLUBAlgorithm(N_LinUCBAlgorithm):
 			ratio = float(np.linalg.norm(self.users[userID].UserTheta - self.users[j].UserTheta,2))/float(self.users[userID].CBPrime + self.users[j].CBPrime)
 			if ratio > 1:
 				ratio = 0
-			elif binaryRatio==True:
+			elif binaryRatio:
 				ratio = 1
+			#print 'ratio',ratio
 			self.Graph[userID][j] = ratio
 			self.Graph[j][userID] = self.Graph[userID][j]
 		N_components, component_list = connected_components(csr_matrix(self.Graph))
