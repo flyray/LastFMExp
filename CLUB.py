@@ -22,7 +22,7 @@ class CLUBUserStruct(LinUCBUserStruct):
 		self.AInv = np.linalg.inv(self.A)
 		self.UserTheta = np.dot(self.AInv, self.b)
 		self.counter+=1
-		self.CBPrime = alpha_2*np.sqrt((1+math.log10(1+self.counter))/(1+self.counter))
+		self.CBPrime = alpha_2*np.sqrt(float(1+math.log10(1+self.counter))/float(1+self.counter))
 
 	def updateParametersofClusters(self,clusters,userID,Graph,users):
 		self.CA = self.I
