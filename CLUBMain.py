@@ -61,6 +61,7 @@ if __name__ == '__main__':
             s += '  CLUB '+str(CLUBPicked)+' '+str(CLUBTotalReward)
             recordedStats.append(CLUBPicked)
             recordedStats.append(CLUBTotalReward)
+            recordedStats.append(NComponents)
         #print s         
         # write to file
         save_to_file(fileNameWrite, recordedStats, tim) 
@@ -207,7 +208,8 @@ if __name__ == '__main__':
         f.write('\nNew Run at  ' + datetime.datetime.now().strftime('%m/%d/%Y %H:%M:%S'))
         f.write('\n, Time, RandomReward; ')
         if runCLUB:
-            f.write('CLUBReward')
+            f.write('CLUBReward;')
+            f.write('NComponents')
         f.write('\n')
 
     print fileName, fileNameWrite
@@ -252,7 +254,7 @@ if __name__ == '__main__':
                     CLUB.users[int(userID)].reward +=1
                     CLUBReward = 1
                 CLUB.updateParameters(CLUB_PickedfeatureVector, CLUBReward,userID)
-                CLUB.updateGraphClusters(userID,binaryRatio)
+                NComponents=CLUB.updateGraphClusters(userID,binaryRatio)
                 
                 
             save_flag = 0
