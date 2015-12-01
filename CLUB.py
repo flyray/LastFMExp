@@ -80,7 +80,7 @@ class CLUBAlgorithm(N_LinUCBAlgorithm):
 		n = len(self.users)
 		for j in range(n):
 			ratio = float(np.linalg.norm(self.users[userID].UserTheta - self.users[j].UserTheta,2))/float(self.users[userID].CBPrime + self.users[j].CBPrime)
-			print float(np.linalg.norm(self.users[userID].UserTheta - self.users[j].UserTheta,2)),'R', ratio
+			#print float(np.linalg.norm(self.users[userID].UserTheta - self.users[j].UserTheta,2)),'R', ratio
 			if ratio > 1:
 				ratio = 0
 			elif binaryRatio == 'True':
