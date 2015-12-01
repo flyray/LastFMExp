@@ -90,6 +90,7 @@ class CLUBAlgorithm(N_LinUCBAlgorithm):
 		N_components, component_list = connected_components(csr_matrix(self.Graph))
 		print 'N_components:',N_components
 		self.clusters = component_list
+		return N_components
 
 
 
