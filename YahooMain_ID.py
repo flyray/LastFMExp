@@ -229,27 +229,26 @@ if __name__ == '__main__':
 				articles_random.learn_stats.addrecord(click)
 				if algName == 'CoLin':
 					if CoLinUCBPicked == article_chosen:
-					CoLinUCB_USERS.learn_stats.addrecord(click)
-					CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector, click, currentUserID)
-					calculateStat()
+						CoLinUCB_USERS.learn_stats.addrecord(click)
+						CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector, click, currentUserID)
+						calculateStat()
 
 				if algName == 'GOBLin':
 					if GOBLinPicked == article_chosen:
-					GOBLin_USERS.learn_stats.addrecord(click)
-					GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, click, currentUserID)
-					calculateStat()
+						GOBLin_USERS.learn_stats.addrecord(click)
+						GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, click, currentUserID)
+						calculateStat()
 				if algName == 'HybridLinUCB':
 					if HybridLinUCBPicked == article_chosen:
-					HybridLinUCB_USERS.learn_stats.addrecord(click)
-					HybridLinUCB_USERS.updateParameters(HybridLinUCB_USERS_PickedfeatureVector, click, currentUserID)
-					calculateStat()
+						HybridLinUCB_USERS.learn_stats.addrecord(click)
+						HybridLinUCB_USERS.updateParameters(HybridLinUCB_USERS_PickedfeatureVector, click, currentUserID)
+						calculateStat()
 				if algName == 'LinUCB':
-					print 'Picked', LinUCBPicked, click,LinUCB_maxPTA, article_chosen
+					#print 'Picked', LinUCBPicked, click,LinUCB_maxPTA, article_chosen
 					if LinUCBPicked == article_chosen:
-
-					LinUCB_users[currentUserID].learn_stats.addrecord(click)
-					LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
-					calculateStat()
+						LinUCB_users[currentUserID].learn_stats.addrecord(click)
+						LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
+						calculateStat()
 				# if the batch has ended
 				if totalObservations%batchSize==0:
 					printWrite()
