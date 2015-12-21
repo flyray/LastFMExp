@@ -127,7 +127,7 @@ if __name__ == '__main__':
 	
 	timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M') 	# the current data time
 	dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
-	fileSig = str(DiagType)+str(clusterNum)+ 'SP'+ str(SparsityLevel)+algName
+	fileSig = str(algName)+str(clusterNum)+ 'SP'+ str(SparsityLevel)+algName
 	batchSize = 2000
 	statBatchSize = 200000							# size of one batch
 	
@@ -195,28 +195,28 @@ if __name__ == '__main__':
 						if algName == 'CoLin':
 							CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
 							if CoLinUCB_maxPTA < CoLinUCB_pta:
-							        CoLinUCBPicked = article_id    # article picked by CoLinUCB
-							        CoLinUCB_PickedfeatureVector = article_featureVector
-							        CoLinUCB_maxPTA = CoLinUCB_pta
+								CoLinUCBPicked = article_id    # article picked by CoLinUCB
+								CoLinUCB_PickedfeatureVector = article_featureVector
+								CoLinUCB_maxPTA = CoLinUCB_pta
 						if algName == 'GOBLin':
 							GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
 							if GOBLin_maxPTA < GOBLin_pta:
-							        GOBLinPicked = article_id    # article picked by GOB.Lin
-							        GOBLin_PickedfeatureVector = article_featureVector
-							        GOBLin_maxPTA = GOBLin_pta
+								GOBLinPicked = article_id    # article picked by GOB.Lin
+								GOBLin_PickedfeatureVector = article_featureVector
+								GOBLin_maxPTA = GOBLin_pta
 						if algName == 'HybridLinUCB':
 							HybridLinUCB_pta = HybridLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
 							if HybridLinUCB_maxPTA < HybridLinUCB_pta:
-							        HybridLinUCBPicked = article_id
-							        HybridLinUCB_PickedfeatureVector = article_featureVector
-							        HybridLinUCB_maxPTA = HybridLinUCB_pta
+								HybridLinUCBPicked = article_id
+								HybridLinUCB_PickedfeatureVector = article_featureVector
+								HybridLinUCB_maxPTA = HybridLinUCB_pta
 					         
 						if algName == 'LinUCB':
 							LinUCB_pta = LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
 							if LinUCB_maxPTA < LinUCB_pta:
 								LinUCBPicked = article_id    # article picked by CoLinU
-							    LinUCB_PickedfeatureVector = article_featureVector
-							    LinUCB_maxPTA = LinUCB_pta
+								LinUCB_PickedfeatureVector = article_featureVector
+								LinUCB_maxPTA = LinUCB_pta
 		
 				for article in currentArticles:
 					if article not in articleTruePositve:
