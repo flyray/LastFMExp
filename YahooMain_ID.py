@@ -36,6 +36,10 @@ class LinUCBStruct(LinUCBUserStruct):
 	def __init__(self, featureDimension, lambda_):
 		LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_)
 		self.learn_stats = articleAccess()
+class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
+	def __init__(self,featureDimension, lambda_, userFeatureList):
+		Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
+		self.learn_stats = articleAccess()
 
 if __name__ == '__main__':
 	# regularly print stuff to see if everything is going alright.
@@ -52,12 +56,12 @@ if __name__ == '__main__':
 			print totalObservations
 			print 'random', randomLearnCTR,'  GOBLin', GOBLinCTR  	
 			recordedStats = [randomLearnCTR, GOBLinCTR, GOBLin_USERS.learn_stats.accesses, GOBLin_USERS.learn_stats.clicks]
-                if algName == 'Uniform_LinUCB':
-                        UniformLinUCBCTR = LinUCB_USERS.learn_stats.updateCTR()
-                        print totalObservations
-                        print 'random', randomLearnCTR, 'Uniform_LinUCB', UniformLinUCBCTR
-                        recordedStats =[randomLearnCTR, UniformLinUCBCTR, LinUCB_USERS.learn_stats.accesses,LinUCB_USERS.learn_stats.clicks]
-                if algName == 'LinUCB':
+		if algName == 'HybridLinUCB':
+			HybridLinUCBCTR = HybridLinUCB_USERS.learn_stats.updateCTR()
+			print totalObservations
+			print 'random', randomLearnCTR, 'HybridLinUCB', HybridLinUCBCTR
+			recordedStats =[randomLearnCTR, HybridLinUCBCTR, HybridLinUCB_USERS.learn_stats.accesses,HybridLinUCB_USERS.learn_stats.clicks]
+		if algName == 'LinUCB':
 			TotalLinUCBAccess = 0.0
 			TotalLinUCBClick = 0.0
 			for i in range(userNum):			
@@ -102,31 +106,25 @@ if __name__ == '__main__':
 				if article == article_chosen:
 					articleFalsePositive[article_chosen] +=1
 
-		
-        
+	parser = argparse.ArgumentParser(description = '')
+	parser.add_argument('--YahooDataFile', dest="Yahoo_save_address", help="input the adress for Yahoo data")
+	parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLin, GOBLin, LinUCB, or HybridLinUCB')
 
+	parser.add_argument('--showheatmap', action='store_true',
+	                help='Show heatmap of relation matrix.') 
+	parser.add_argument('--userNum', dest = 'userNum', help = 'Set the userNum, can be 20, 40, 80, 160')
 
-        parser = argparse.ArgumentParser(description = '')
-        parser.add_argument('--YahooDataFile', dest="Yahoo_save_address", help="input the adress for Yahoo data")
-        parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLin, GOBLin, LinUCB, or Uniform_LinUCB')
-   
-        parser.add_argument('--showheatmap', action='store_true',
-                        help='Show heatmap of relation matrix.') 
-        parser.add_argument('--userNum', dest = 'userNum', help = 'Set the userNum, can be 20, 40, 80, 160')
+	parser.add_argument('--Sparsity', dest = 'SparsityLevel', help ='Set the SparsityLevel by choosing the top M most connected users, should be smaller than userNum, when equal to userNum, we are using a full connected graph')
+	parser.add_argument('--diag', dest="DiagType", help="Specify the setting of diagional setting, can be set as 'Orgin' or 'Opt' ") 
 
-        parser.add_argument('--Sparsity', dest = 'SparsityLevel', help ='Set the SparsityLevel by choosing the top M most connected users, should be smaller than userNum, when equal to userNum, we are using a full connected graph')
-        parser.add_argument('--diag', dest="DiagType", help="Specify the setting of diagional setting, can be set as 'Orgin' or 'Opt' ") 
+	args = parser.parse_args()
 
-
-        args = parser.parse_args()
-    
-        algName = str(args.alg)
-        clusterNum = int(args.userNum)
-        SparsityLevel = int(args.SparsityLevel)
-        yahooData_address = str(args.Yahoo_save_address)
-        DiagType = str(args.DiagType)
-
-
+	algName = str(args.alg)
+	clusterNum = int(args.userNum)
+	SparsityLevel = int(args.SparsityLevel)
+	yahooData_address = str(args.Yahoo_save_address)
+	DiagType = str(args.DiagType)
+	
 	timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M') 	# the current data time
 	dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
 	fileSig = str(DiagType)+str(clusterNum)+ 'SP'+ str(SparsityLevel)+algName
@@ -158,10 +156,11 @@ if __name__ == '__main__':
 	articles_random = randomStruct()
 	CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W )
 	GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
-        LinUCB_USERS = LinUCBStruct(d, lambda_)
-        LinUCB_users = []
+	LinUCB_USERS = LinUCBStruct(d, lambda_)
+	LinUCB_users = []
 	for i in range(userNum):
 		LinUCB_users.append(LinUCBStruct(d, lambda_ ))
+	HybridLinUCB_USERS= Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
 	
 	for dataDay in dataDays:
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.userID'
@@ -185,96 +184,77 @@ if __name__ == '__main__':
 				tim, article_chosen, click, currentUserID, pool_articles = parseLine_ID(line)
 				#currentUser_featureVector = user_features[:-1]
 				#currentUserID = getIDAssignment(np.asarray(currentUser_featureVector), userFeatureVectors)                
-                
-                                #-----------------------------Pick an article (CoLinUCB, LinUCB, Random)-------------------------
-                                currentArticles = []
-                                CoLinUCB_maxPTA = float('-inf')
-                                CoLinUCBPicked = None      
-                                CoLinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
+				#-----------------------------Pick an article (CoLinUCB, LinUCB, Random)-------------------------
+				currentArticles = []
+				for article in pool_articles:
+					article_id = int(article[0])
+					article_featureVector =np.asarray(article[1:6])
+					# CoLinUCB pick article
+					if len(article_featureVector)==5:
+						currentArticles.append(article_id)			
+						if algName == 'CoLin':
+							CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+							if CoLinUCB_maxPTA < CoLinUCB_pta:
+							        CoLinUCBPicked = article_id    # article picked by CoLinUCB
+							        CoLinUCB_PickedfeatureVector = article_featureVector
+							        CoLinUCB_maxPTA = CoLinUCB_pta
+						if algName == 'GOBLin':
+							GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
+							if GOBLin_maxPTA < GOBLin_pta:
+							        GOBLinPicked = article_id    # article picked by GOB.Lin
+							        GOBLin_PickedfeatureVector = article_featureVector
+							        GOBLin_maxPTA = GOBLin_pta
+						if algName == 'HybridLinUCB':
+							HybridLinUCB_pta = HybridLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+							if HybridLinUCB_maxPTA < HybridLinUCB_pta:
+							        HybridLinUCBPicked = article_id
+							        HybridLinUCB_PickedfeatureVector = article_featureVector
+							        HybridLinUCB_maxPTA = HybridLinUCB_pta
+					         
+						if algName == 'LinUCB':
+							LinUCB_pta = LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
+							if LinUCB_maxPTA < LinUCB_pta:
+								LinUCBPicked = article_id    # article picked by CoLinU
+							    LinUCB_PickedfeatureVector = article_featureVector
+							    LinUCB_maxPTA = LinUCB_pta
+		
+				for article in currentArticles:
+					if article not in articleTruePositve:
+					articleTruePositve[article] = 0
+					articleTrueNegative[article] = 0
+					articleFalsePositive[article] = 0
+					articleFalseNegative[article] = 0
 
-                                GOBLin_maxPTA = float('-inf')
-                                GOBLinPicked = None
-                                GOBLin_PickedfeatureVector = np.array([0,0,0,0,0])
+				# article picked by random strategy
+				articles_random.learn_stats.addrecord(click)
+				if algName == 'CoLin':
+					if CoLinUCBPicked == article_chosen:
+					CoLinUCB_USERS.learn_stats.addrecord(click)
+					CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector, click, currentUserID)
+					calculateStat()
 
-                                UniformLinUCB_maxPTA = float('-inf')
-                                UniformLinUCBPicked = None
-                                UniformLiUCB_PickedfeatureVector = np.array([0,0,0,0,0])
-
-                             	LinUCB_maxPTA = float('-inf')  
-                                LinUCBPicked = None
-                                LinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
-
-                                for article in pool_articles:
-                                        article_id = int(article[0])
-                                        article_featureVector =np.asarray(article[1:6])
-                                        currentArticles.append(article_id)
-	                                        # CoLinUCB pick article
-                                        if len(article_featureVector)==5:
-                                                if algName == 'CoLin':
-                                                        CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
-                                                        if CoLinUCB_maxPTA < CoLinUCB_pta:
-                                                                CoLinUCBPicked = article_id    # article picked by CoLinUCB
-                                                                CoLinUCB_PickedfeatureVector = article_featureVector
-                                                                CoLinUCB_maxPTA = CoLinUCB_pta
-                                                if algName == 'GOBLin':
-                                                        GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
-                                                        if GOBLin_maxPTA < GOBLin_pta:
-                                                                GOBLinPicked = article_id    # article picked by GOB.Lin
-                                                                GOBLin_PickedfeatureVector = article_featureVector
-                                                                GOBLin_maxPTA = GOBLin_pta
-                                                if algName == 'Uniform_LinUCB':
-                                                        UniformLinUCB_pta = LinUCB_USERS.getProb(alpha, article_featureVector)
-                                                        if UniformLinUCB_maxPTA < UniformLinUCB_pta:
-                                                                UniformLinUCBPicked = article_id
-                                                                UniformLinUCB_PickedfeatureVector = article_featureVector
-                                                                UniformLinUCB_maxPTA = UniformLinUCB_pta
-                                                                 
-                                                if algName == 'LinUCB':
-                                                        LinUCB_pta = LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
-	                                                if LinUCB_maxPTA < LinUCB_pta:
-                                                                LinUCBPicked = article_id    # article picked by CoLinU
-	                                                        LinUCB_PickedfeatureVector = article_featureVector
-	                                                        LinUCB_maxPTA = LinUCB_pta
-					print article_id, LinUCB_pta
-				time.sleep(1)
-                                for article in currentArticles:
-                                	if article not in articleTruePositve:
-                                            articleTruePositve[article] = 0
-                                            articleTrueNegative[article] = 0
-                                            articleFalsePositive[article] = 0
-                                            articleFalseNegative[article] = 0
-
-                               
-                                # article picked by random strategy
-                                articles_random.learn_stats.addrecord(click)
-                                if algName == 'CoLin':
-	                                if CoLinUCBPicked == article_chosen:
-                                                CoLinUCB_USERS.learn_stats.addrecord(click)
-                                                CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector, click, currentUserID)
-                                               	calculateStat()
-                                                
-                                if algName == 'GOBLin':
-	                            	if GOBLinPicked == article_chosen:
-                                                GOBLin_USERS.learn_stats.addrecord(click)
-                                                GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, click, currentUserID)
-                                                calculateStat()
-                                if algName == 'Uniform_LinUCB':
-                                        if UniformLinUCBPicked == article_chosen:
-                                                LinUCB_USERS.learn_stats.addrecord(click)
-                                                LinUCB_USERS.updateParameters(UniformLinUCB_PickedfeatureVector, click)
-                                                calculateStat()
-                                if algName == 'LinUCB':
+				if algName == 'GOBLin':
+					if GOBLinPicked == article_chosen:
+					GOBLin_USERS.learn_stats.addrecord(click)
+					GOBLin_USERS.updateParameters(GOBLin_PickedfeatureVector, click, currentUserID)
+					calculateStat()
+				if algName == 'HybridLinUCB':
+					if HybridLinUCBPicked == article_chosen:
+					HybridLinUCB_USERS.learn_stats.addrecord(click)
+					HybridLinUCB_USERS.updateParameters(HybridLinUCB_USERS_PickedfeatureVector, click, currentUserID)
+					calculateStat()
+				if algName == 'LinUCB':
 					print 'Picked', LinUCBPicked, click,LinUCB_maxPTA, article_chosen
-                                	if LinUCBPicked == article_chosen:
-						
-                                                LinUCB_users[currentUserID].learn_stats.addrecord(click)
-                                                LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
-                                                calculateStat()
-                                # if the batch has ended
-                                if totalObservations%batchSize==0:
-                                        printWrite()
-                                if totalObservations%statBatchSize==0:
-                                        WriteStat()
-                        #print stuff to screen and save parameters to file when the Yahoo! dataset file ends
-                        printWrite()
-                        WriteStat()
+					if LinUCBPicked == article_chosen:
+
+					LinUCB_users[currentUserID].learn_stats.addrecord(click)
+					LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
+					calculateStat()
+				# if the batch has ended
+				if totalObservations%batchSize==0:
+					printWrite()
+				if totalObservations%statBatchSize==0:
+					WriteStat()
+			#print stuff to screen and save parameters to file when the Yahoo! dataset file ends
+			printWrite()
+			WriteStat()
