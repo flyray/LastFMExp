@@ -220,10 +220,10 @@ if __name__ == '__main__':
 		
 				for article in currentArticles:
 					if article not in articleTruePositve:
-					articleTruePositve[article] = 0
-					articleTrueNegative[article] = 0
-					articleFalsePositive[article] = 0
-					articleFalseNegative[article] = 0
+						articleTruePositve[article] = 0
+						articleTrueNegative[article] = 0
+						articleFalsePositive[article] = 0
+						articleFalseNegative[article] = 0
 
 				# article picked by random strategy
 				articles_random.learn_stats.addrecord(click)
