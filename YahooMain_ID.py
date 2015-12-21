@@ -14,7 +14,7 @@ from YahooExp_util_functions import *
 
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from GOBLin import GOBLinSharedStruct
-from LinUCB import LinUCBUserStruct
+from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 
 
 # structure to save data from random strategy as mentioned in LiHongs paper
