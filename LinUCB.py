@@ -1,4 +1,5 @@
 import numpy as np
+from YahooExp_util_functions import *
 
 class LinUCBUserStruct:
 	def __init__(self, featureDimension,lambda_):
@@ -28,24 +29,26 @@ class LinUCBUserStruct:
 
 class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):
 	def __init__(self, userFeature, lambda_):
-		LinUCBUserStruct.__init__(len(userFeature), lambda_)
-		self.k = len(userFeature)**2
-		self.B = np.zeros([self.d, self.k])
+		LinUCBUserStruct.__init__(self, len(userFeature), lambda_)
+		
+		self.B = np.zeros([self.d, self.d**2])
 		self.userFeature = userFeature
 	def updateParameters(self, article_FeatureVector, click):
-		additionalFeatureVector = vectorize(np.outer(userFeature, article_FeatureVector))
-		LinUCBUserStruct.updateParameters(article_FeatureVector, click)
+		additionalFeatureVector = vectorize(np.outer(self.userFeature, article_FeatureVector))
+		LinUCBUserStruct.updateParameters(self, article_FeatureVector, click)
 		self.B +=np.outer(article_FeatureVector, additionalFeatureVector)
 
 class Hybrid_LinUCBUserStruct:
 	def __init__(self, featureDimension,  lambda_, userFeatureList):
+		self.k = featureDimension**2
 		self.A_z = lambda_*np.identity(n = self.k)
 		self.b_z = np.zeros(self.k)
 		self.A_zInv = np.linalg.inv(self.A_z)
 		self.beta = np.dot(self.A_zInv, self.b_z)
+		self.users = []
 
 		for i in range(len(userFeatureList)):
-			self.users.append(Hybrid_LinUCB_singleUserStruct(userFeatureList[i], additionalFeatureDimension, lambda_ ))
+			self.users.append(Hybrid_LinUCB_singleUserStruct(userFeatureList[i], lambda_ ))
 
 	def updateParameters(self, articlePicked_FeatureVector, click, userID):
 		z = vectorize( np.outer(self.users[userID].userFeature, articlePicked_FeatureVector))
@@ -55,19 +58,21 @@ class Hybrid_LinUCBUserStruct:
 		self.A_z += np.dot(temp, self.users[userID].B)
 		self.b_z +=np.dot(temp, self.users[userID].b)
 
-		self.users[userID].updateParameters(article_FeatureVector, click)
+		self.users[userID].updateParameters(articlePicked_FeatureVector, click)
 		temp = np.dot(np.transpose(self.users[userID].B), self.users[userID].AInv)
 
 		self.A_z = self.A_z + np.outer(z,z) - np.dot(temp, self.users[userID].B)
 		self.b_z =self.b_z+ click*z - np.dot(temp, self.users[userID].b)
+		self.A_zInv = np.linalg.inv(self.A_z)
+
 		self.beta =np.dot(self.A_zInv, self.b_z)
 	def getProb(self, alpha, article_FeatureVector,userID):
 		x = article_FeatureVector
 		z = vectorize(np.outer(self.users[userID].userFeature, article_FeatureVector))
-		temp =np.dot(np.dot(np.dot( self.A_zInv , np.transpose(self.B)) , self.AInv), x )
-		mean = np.dot(self.UserTheta,  x)+ np.dot(self.beta, z)
-		s_t = np.dot(np.dot(z, self.A_zInv),  z) + np.dot(np.dot(x, self.AInv),  x)
-		-2* np.dot(z, temp)+ np.dot(np.dot( np.dot(x, self.AInv) , self.B ) ,temp)
+		temp =np.dot(np.dot(np.dot( self.A_zInv , np.transpose( self.users[userID].B)) , self.users[userID].AInv), x )
+		mean = np.dot(self.users[userID].UserTheta,  x)+ np.dot(self.beta, z)
+		s_t = np.dot(np.dot(z, self.A_zInv),  z) + np.dot(np.dot(x, self.users[userID].AInv),  x)
+		-2* np.dot(z, temp)+ np.dot(np.dot( np.dot(x, self.users[userID].AInv) ,  self.users[userID].B ) ,temp)
 
 		var = np.sqrt(s_t)
 		pta = mean + alpha * var

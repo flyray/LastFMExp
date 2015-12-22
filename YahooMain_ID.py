@@ -163,7 +163,7 @@ if __name__ == '__main__':
 	HybridLinUCB_USERS= Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
 	
 	for dataDay in dataDays:
-		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.userID'
+		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.'+ str(userNum) +'.userID'
 		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
 
 		fileNameWriteStatTP = os.path.join(Yahoo_save_address, 'Stat_TP'+ fileSig + dataDay + timeRun + '.csv')
@@ -186,6 +186,24 @@ if __name__ == '__main__':
 				#currentUserID = getIDAssignment(np.asarray(currentUser_featureVector), userFeatureVectors)                
 				#-----------------------------Pick an article (CoLinUCB, LinUCB, Random)-------------------------
 				currentArticles = []
+				CoLinUCB_maxPTA = float('-inf')
+				CoLinUCBPicked = None  
+				CoLinUCBPickedUser = None    
+				CoLinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
+
+				GOBLin_maxPTA = float('-inf')
+				GOBLinPicked = None
+				GOBLinPickedUser = None
+				GOBLin_PickedfeatureVector = np.array([0,0,0,0,0])
+
+				HybridLinUCB_maxPTA = float('-inf')
+				HybridLinUCBPicked = None
+				HybridLinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
+
+				LinUCB_maxPTA = float('-inf')  
+				LinUCBPicked = None
+				LinUCBPickedUser = None
+				LinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
 				for article in pool_articles:
 					article_id = int(article[0])
 					article_featureVector =np.asarray(article[1:6])
@@ -241,7 +259,7 @@ if __name__ == '__main__':
 				if algName == 'HybridLinUCB':
 					if HybridLinUCBPicked == article_chosen:
 						HybridLinUCB_USERS.learn_stats.addrecord(click)
-						HybridLinUCB_USERS.updateParameters(HybridLinUCB_USERS_PickedfeatureVector, click, currentUserID)
+						HybridLinUCB_USERS.updateParameters(HybridLinUCB_PickedfeatureVector, click, currentUserID)
 						calculateStat()
 				if algName == 'LinUCB':
 					#print 'Picked', LinUCBPicked, click,LinUCB_maxPTA, article_chosen
