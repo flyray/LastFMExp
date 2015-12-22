@@ -37,6 +37,8 @@ class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):
 		additionalFeatureVector = vectorize(np.outer(self.userFeature, article_FeatureVector))
 		LinUCBUserStruct.updateParameters(self, article_FeatureVector, click)
 		self.B +=np.outer(article_FeatureVector, additionalFeatureVector)
+	def updateTheta(self, beta):
+		self.UserTheta = np.dot(self.AInv, (self.b- np.dot(self.B - beta)))
 
 class Hybrid_LinUCBUserStruct:
 	def __init__(self, featureDimension,  lambda_, userFeatureList):
@@ -66,6 +68,8 @@ class Hybrid_LinUCBUserStruct:
 		self.A_zInv = np.linalg.inv(self.A_z)
 
 		self.beta =np.dot(self.A_zInv, self.b_z)
+		self.users[userID].updateTheta(self.beta)
+
 	def getProb(self, alpha, article_FeatureVector,userID):
 		x = article_FeatureVector
 		z = vectorize(np.outer(self.users[userID].userFeature, article_FeatureVector))
