@@ -82,11 +82,11 @@ if __name__ == '__main__':
 		
 			recordedStats = [randomLearnCTR,  LinUCBCTR, TotalLinUCBAccess, TotalLinUCBClick]
 			# write to file
-        if algName == 'EgreedyContextual':
-            EgreedyContextualCTR = EgreedyContextual.learn_stats.updateCTR()
-            print totalObservations
-            print 'random', randomLearnCTR, 'EgreedyContextual', EgreedyContextualCTR
-            recordedStats =[randomLearnCTR, EgreedyContextualCTR, EgreedyContextual.learn_stats.accesses,HybridLinUCB_USERS.learn_stats.clicks]
+		if algName == 'EgreedyContextual':
+			EgreedyContextualCTR = EgreedyContextual.learn_stats.updateCTR()
+			print totalObservations
+			print 'random', randomLearnCTR, 'EgreedyContextual', EgreedyContextualCTR
+			recordedStats =[randomLearnCTR, EgreedyContextualCTR, EgreedyContextual.learn_stats.accesses,HybridLinUCB_USERS.learn_stats.clicks]
 		save_to_file(fileNameWrite, recordedStats, tim) 
 	def WriteStat():
 		with open(fileNameWriteStatTP, 'a+') as f:
