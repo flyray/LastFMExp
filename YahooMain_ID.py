@@ -41,9 +41,9 @@ class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
 		Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
 		self.learn_stats = articleAccess()
 class EgreedyContextualStruct(EgreedyContextualSharedStruct):
-    def __init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero'):
-        EgreedyContextualSharedStruct.__init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero')
-        self.learn_stats = articleAccess()
+	def __init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero'):
+		EgreedyContextualSharedStruct.__init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero')
+		self.learn_stats = articleAccess()
 
 if __name__ == '__main__':
 	# regularly print stuff to see if everything is going alright.
@@ -214,11 +214,10 @@ if __name__ == '__main__':
 				LinUCBPickedUser = None
 				LinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
 
-                EgreedyContextual_maxPTA = float('-inf')
-                EgreedyContextualPicked = None
-                EgreedyContextual_PickedfeatureVector = np.array([0,0,0,0,0])
-
-                article_pool = []             
+				EgreedyContextual_maxPTA = float('-inf')
+				EgreedyContextualPicked = None
+				EgreedyContextual_PickedfeatureVector = np.array([0,0,0,0,0])
+   
 				for article in pool_articles:
 					article_id = int(article[0])
 					article_featureVector =np.asarray(article[1:6])
@@ -291,11 +290,11 @@ if __name__ == '__main__':
 						LinUCB_users[currentUserID].learn_stats.addrecord(click)
 						LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
 						calculateStat()
-                if algName == 'EgreedyContextual':
-                    if EgreedyContextualPicked == article_chosen:
-                        EgreedyContextual.learn_stats.addrecord(click)
-                        EgreedyContextual.updateParameters(click, EgreedyContextualPicked, currentUserID)
-                        calculateStat()
+				if algName == 'EgreedyContextual':
+					if EgreedyContextualPicked == article_chosen:
+						EgreedyContextual.learn_stats.addrecord(click)
+						EgreedyContextual.updateParameters(click, EgreedyContextualPicked, currentUserID)
+						calculateStat()
 				# if the batch has ended
 				if totalObservations%batchSize==0:
 					printWrite()
