@@ -170,7 +170,7 @@ if __name__ == '__main__':
 	for i in range(userNum):
 		LinUCB_users.append(LinUCBStruct(d, lambda_ ))
 	HybridLinUCB_USERS= Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
-	EgreedyContextual = EgreedyContextualStruct(Tu= 200, m=10, lambd=0.1, alpha=2000, userNum=userNum, itemNum=300, k=2+5, feature_dim = 5, init='zero')
+	EgreedyContextual = EgreedyContextualStruct(Tu= 200, m=10, lambd=0.1, alpha=2000, userNum=userNum, itemNum=200000, k=2+5, feature_dim = 5, init='zero')
 	for dataDay in dataDays:
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.'+ str(userNum) +'.userID'
 		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
