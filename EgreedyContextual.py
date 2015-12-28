@@ -43,7 +43,7 @@ class EgreedyContextualSharedStruct:
         else:
             return random.choice(items) 
     def getProb(self, itemID, userID, features):
-        self.V[:feature_dim, itemID] = features
+        self.V[:self.feature_dim, itemID] = features
         return self.U[userID].dot(self.V[:, itemID])
 
     def updateParameters(self, reward, itemID, userID, features):
