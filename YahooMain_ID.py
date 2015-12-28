@@ -257,7 +257,9 @@ if __name__ == '__main__':
 								EgreedyContextual_maxPTA = EgreedyContextual_pta
 				if algName == 'EgreedyContextual':    
 					if random() < EgreedyContextual.get_epsilon():
-						EgreedyContextualPicked = choice(currentArticles) 
+						i = choice(range(len(currentArticles)))
+						EgreedyContextualPicked = currentArticles[i]
+						EgreedyContextual_PickedfeatureVector = np.asarray(pool_articles[i][1:6])
 
 				for article in currentArticles:
 					if article not in articleTruePositve:
@@ -293,7 +295,7 @@ if __name__ == '__main__':
 				if algName == 'EgreedyContextual':
 					if EgreedyContextualPicked == article_chosen:
 						EgreedyContextual.learn_stats.addrecord(click)
-						EgreedyContextual.updateParameters(click, EgreedyContextualPicked, currentUserID)
+						EgreedyContextual.updateParameters(click, EgreedyContextualPicked, currentUserID, EgreedyContextual_PickedfeatureVector)
 						calculateStat()
 				# if the batch has ended
 				if totalObservations%batchSize==0:
