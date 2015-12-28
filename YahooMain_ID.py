@@ -256,8 +256,8 @@ if __name__ == '__main__':
 								EgreedyContextual_PickedfeatureVector = article_featureVector
 								EgreedyContextual_maxPTA = EgreedyContextual_pta
 				if algName == 'EgreedyContextual':    
-					if random.random() < EgreedyContextual.get_epsilon():
-						EgreedyContextualPicked = random.choice(currentArticles) 
+					if random() < EgreedyContextual.get_epsilon():
+						EgreedyContextualPicked = choice(currentArticles) 
 
 				for article in currentArticles:
 					if article not in articleTruePositve:
