@@ -15,7 +15,7 @@ from YahooExp_util_functions import *
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from GOBLin import GOBLinSharedStruct
 from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
-
+from EgreedyContextual import EgreedyContextualSharedStruct
 
 # structure to save data from random strategy as mentioned in LiHongs paper
 class randomStruct:
@@ -39,6 +39,10 @@ class LinUCBStruct(LinUCBUserStruct):
 class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
 	def __init__(self,featureDimension, lambda_, userFeatureList):
 		Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
+		self.learn_stats = articleAccess()
+class EgreedyContextualStruct(EgreedyContextualSharedStruct):
+	def __init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero'):
+		EgreedyContextualSharedStruct.__init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero')
 		self.learn_stats = articleAccess()
 
 if __name__ == '__main__':
@@ -78,6 +82,11 @@ if __name__ == '__main__':
 		
 			recordedStats = [randomLearnCTR,  LinUCBCTR, TotalLinUCBAccess, TotalLinUCBClick]
 			# write to file
+		if algName == 'EgreedyContextual':
+			EgreedyContextualCTR = EgreedyContextual.learn_stats.updateCTR()
+			print totalObservations
+			print 'random', randomLearnCTR, 'EgreedyContextual', EgreedyContextualCTR
+			recordedStats =[randomLearnCTR, EgreedyContextualCTR, EgreedyContextual.learn_stats.accesses,HybridLinUCB_USERS.learn_stats.clicks]
 		save_to_file(fileNameWrite, recordedStats, tim) 
 	def WriteStat():
 		with open(fileNameWriteStatTP, 'a+') as f:
@@ -108,7 +117,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description = '')
 	parser.add_argument('--YahooDataFile', dest="Yahoo_save_address", help="input the adress for Yahoo data")
-	parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLin, GOBLin, LinUCB, or HybridLinUCB')
+	parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLin, GOBLin, LinUCB, HybridLinUCB, EgreedyContextual')
 
 	parser.add_argument('--showheatmap', action='store_true',
 	                help='Show heatmap of relation matrix.') 
@@ -161,7 +170,7 @@ if __name__ == '__main__':
 	for i in range(userNum):
 		LinUCB_users.append(LinUCBStruct(d, lambda_ ))
 	HybridLinUCB_USERS= Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
-	
+	EgreedyContextual = EgreedyContextualStruct(Tu= 200, m=10, lambd=0.1, alpha=2000, userNum=userNum, itemNum=200000, k=2+5, feature_dim = 5, init='zero')
 	for dataDay in dataDays:
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.'+ str(userNum) +'.userID'
 		fileNameWrite = os.path.join(Yahoo_save_address, fileSig + dataDay + timeRun + '.csv')
@@ -204,6 +213,11 @@ if __name__ == '__main__':
 				LinUCBPicked = None
 				LinUCBPickedUser = None
 				LinUCB_PickedfeatureVector = np.array([0,0,0,0,0])
+
+				EgreedyContextual_maxPTA = float('-inf')
+				EgreedyContextualPicked = None
+				EgreedyContextual_PickedfeatureVector = np.array([0,0,0,0,0])
+   
 				for article in pool_articles:
 					article_id = int(article[0])
 					article_featureVector =np.asarray(article[1:6])
@@ -235,7 +249,18 @@ if __name__ == '__main__':
 								LinUCBPicked = article_id    # article picked by CoLinU
 								LinUCB_PickedfeatureVector = article_featureVector
 								LinUCB_maxPTA = LinUCB_pta
-		
+						if algName == 'EgreedyContextual':
+							EgreedyContextual_pta = EgreedyContextual.getProb(article_id, currentUserID, article_featureVector) 
+							if EgreedyContextual_maxPTA < EgreedyContextual_pta:
+								EgreedyContextualPicked = article_id
+								EgreedyContextual_PickedfeatureVector = article_featureVector
+								EgreedyContextual_maxPTA = EgreedyContextual_pta
+				if algName == 'EgreedyContextual':    
+					if random() < EgreedyContextual.get_epsilon():
+						i = choice(range(len(currentArticles)))
+						EgreedyContextualPicked = currentArticles[i]
+						EgreedyContextual_PickedfeatureVector = np.asarray(pool_articles[i][1:6])
+
 				for article in currentArticles:
 					if article not in articleTruePositve:
 						articleTruePositve[article] = 0
@@ -266,6 +291,11 @@ if __name__ == '__main__':
 					if LinUCBPicked == article_chosen:
 						LinUCB_users[currentUserID].learn_stats.addrecord(click)
 						LinUCB_users[currentUserID].updateParameters(LinUCB_PickedfeatureVector, click)
+						calculateStat()
+				if algName == 'EgreedyContextual':
+					if EgreedyContextualPicked == article_chosen:
+						EgreedyContextual.learn_stats.addrecord(click)
+						EgreedyContextual.updateParameters(click, EgreedyContextualPicked, currentUserID, EgreedyContextual_PickedfeatureVector)
 						calculateStat()
 				# if the batch has ended
 				if totalObservations%batchSize==0:
