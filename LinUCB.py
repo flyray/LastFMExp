@@ -40,6 +40,8 @@ class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):
 	def updateTheta(self, beta):
 		self.UserTheta = np.dot(self.AInv, (self.b- np.dot(self.B, beta)))
 
+
+
 class Hybrid_LinUCBUserStruct:
 	def __init__(self, featureDimension,  lambda_, userFeatureList):
 		self.k = featureDimension**2
@@ -61,6 +63,7 @@ class Hybrid_LinUCBUserStruct:
 		self.b_z +=np.dot(temp, self.users[userID].b)
 
 		self.users[userID].updateParameters(articlePicked_FeatureVector, click)
+
 		temp = np.dot(np.transpose(self.users[userID].B), self.users[userID].AInv)
 
 		self.A_z = self.A_z + np.outer(z,z) - np.dot(temp, self.users[userID].B)
