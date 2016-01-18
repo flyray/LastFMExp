@@ -31,7 +31,7 @@ class LinUCBStruct(LinUCBUserStruct):
 class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
     def __init__(self,featureDimension, lambda_, userFeatureList):
         Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
-        self.learn_stats = articleAccess()
+        self.reward = 0
 # structure to save data from CoLinUCB strategy
 class CoLinUCBStruct(AsyCoLinUCBUserSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W):
@@ -163,6 +163,7 @@ if __name__ == '__main__':
     FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
     #Generate user feature vectors
     userFeatureVectors = generateUserFeature(W)
+    print userFeatureVectors
     # Decide which algorithms to run.
     runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= run_Hybrid_LinUCB=False
     if args.alg:
@@ -231,7 +232,7 @@ if __name__ == '__main__':
         if run_Uniform_LinUCB:
             Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
         if run_Hybrid_LinUCB:
-            HybridLinUCB_USERS = Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
+            Hybrid_LinUCB_USERS = Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
@@ -402,7 +403,7 @@ if __name__ == '__main__':
                 if Hybrid_LinUCB_Picked == article_chosen:
                     Hybrid_LinUCB_USERS.reward +=1
                     Hybrid_LinUCBReward = 1
-                Hybrid_LinUCB_USERS.updateParameters(Hybrid_LinUCB_PickedfeatureVector, Hybrid_LinUCBReward)                
+                Hybrid_LinUCB_USERS.updateParameters(Hybrid_LinUCB_PickedfeatureVector, Hybrid_LinUCBReward, currentUserID)                
                 if save_flag:
                     model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_HybridLinUCB_Diagnol_'+args.diagnol+'_' + timeRun
                     model_dump(Hybrid_LinUCB_USERS, model_name, i)         
