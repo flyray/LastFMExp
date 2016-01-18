@@ -8,6 +8,11 @@ from scipy.sparse import csgraph
 from scipy.spatial import distance
 from sklearn.cluster import KMeans
 from sklearn.cluster import SpectralClustering
+from sklearn.decomposition import TruncatedSVD
+def generateUserFeature(W):
+    svd = TruncatedSVD(n_components=25)
+    result = svd.fit(W).transform(W)
+    return result
 def vectorize(M):
 	temp = []
 	for i in range(M.shape[0]*M.shape[1]):

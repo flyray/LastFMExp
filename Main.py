@@ -15,7 +15,7 @@ from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeG
 #from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
 
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
-from LinUCB import LinUCBUserStruct
+from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from GOBLin import GOBLinSharedStruct
 
 # structure to save data from random strategy as mentioned in LiHongs paper
@@ -28,7 +28,10 @@ class LinUCBStruct(LinUCBUserStruct):
     def __init__(self, featureDimension, lambda_):
         LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_)
         self.reward = 0
-
+class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
+    def __init__(self,featureDimension, lambda_, userFeatureList):
+        Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
+        self.learn_stats = articleAccess()
 # structure to save data from CoLinUCB strategy
 class CoLinUCBStruct(AsyCoLinUCBUserSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W):
@@ -82,6 +85,10 @@ if __name__ == '__main__':
             s += ' Uniform_LinUCB ' + str(Uniform_LinUCB_USERS.reward)
             recordedStats.append(Uniform_LinUCB_Picked)
             recordedStats.append(Uniform_LinUCB_USERS.reward)
+        if run_Hybrid_LinUCB:
+            s += ' Hybrid_LinUCB ' + str(Hybrid_LinUCB_USERS.reward)
+            recordedStats.append(Hybrid_LinUCB_Picked)
+            recordedStats.append(Hybrid_LinUCB_USERS.reward)
         #print s         
         # write to file
         save_to_file(fileNameWrite, recordedStats, tim) 
@@ -96,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
                         metavar="FILE", type=lambda x: is_valid_file(parser, x))
     # Select algorithm.
-    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL. No alg argument means Random.')
+    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, Hybrid_LinUCB, or ALL. No alg argument means Random.')
    
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True, help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
@@ -154,8 +161,10 @@ if __name__ == '__main__':
         W = normalizedNewW
     # Read Feature Vectors from File
     FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
+    #Generate user feature vectors
+    userFeatureVectors = generateUserFeature(W)
     # Decide which algorithms to run.
-    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= False
+    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= run_Hybrid_LinUCB=False
     if args.alg:
         if args.alg == 'CoLinUCB':
             runCoLinUCB = True
@@ -167,8 +176,10 @@ if __name__ == '__main__':
             run_M_LinUCB = True
         elif args.alg == 'Uniform_LinUCB':
             run_Uniform_LinUCB = True
+        elif args.alg == 'Hybrid_LinUCB':
+            run_Hybrid_LinUCB = True            
         elif args.alg == 'ALL':
-            runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=True
+            runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=run_Hybrid_LinUCB=True
     else:
         args.alg = 'Random'
         #runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
@@ -219,7 +230,8 @@ if __name__ == '__main__':
                 M_LinUCB_users.append(LinUCBStruct(d, lambda_))
         if run_Uniform_LinUCB:
             Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
-
+        if run_Hybrid_LinUCB:
+            HybridLinUCB_USERS = Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
@@ -264,6 +276,8 @@ if __name__ == '__main__':
                 M_LinUCBReward = 0
             if run_Uniform_LinUCB:
                 Uniform_LinUCBReward = 0
+            if run_Hybrid_LinUCB:
+                Hybrid_LinUCBReward = 0
 
             totalObservations +=1
             userID, tim, pool_articles = parseLine(line)
@@ -287,6 +301,10 @@ if __name__ == '__main__':
             if run_Uniform_LinUCB:
                 Uniform_LinUCB_maxPTA =  float('-inf')
                 Uniform_LinUCB_Picked = None
+            if run_Hybrid_LinUCB:
+                Hybrid_LinUCB_maxPTA =  float('-inf')
+                Hybrid_LinUCB_Picked = None
+
             currentUserID =label[int(userID)] 
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
@@ -332,7 +350,12 @@ if __name__ == '__main__':
                             Uniform_LinUCB_Picked = article_id
                             Uniform_LinUCB_PickedfeatureVector = article_featureVector
                             Uniform_LinUCB_maxPTA = Uniform_LinUCB_pta
-
+                    if run_Hybrid_LinUCB:
+                        Hybrid_LinUCB_pta = Hybrid_LinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+                        if Hybrid_LinUCB_maxPTA < Hybrid_LinUCB_pta:
+                            Hybrid_LinUCB_Picked = article_id
+                            Hybrid_LinUCB_PickedfeatureVector = article_featureVector
+                            Hybrid_LinUCB_maxPTA = Hybrid_LinUCB_pta
             # article picked by random strategy
             #article_chosen = currentArticles[0]
             #print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
@@ -348,7 +371,8 @@ if __name__ == '__main__':
                 CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
                 if save_flag:
                     model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_CoLinUCB_Diagnol_'+args.diagnol+'_' + timeRun                    
-                    model_dump(CoLinUCB_USERS, model_name, i)                
+                    model_dump(CoLinUCB_USERS, model_name, i)       
+
             if runLinUCB:
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward +=1
@@ -373,7 +397,15 @@ if __name__ == '__main__':
                 Uniform_LinUCB_USERS.updateParameters(Uniform_LinUCB_PickedfeatureVector, Uniform_LinUCBReward)                
                 if save_flag:
                     model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_UniformLinUCB_Diagnol_'+args.diagnol+'_' + timeRun
-                    model_dump(Uniform_LinUCB_USERS, model_name, i)                
+                    model_dump(Uniform_LinUCB_USERS, model_name, i)           
+            if run_Hybrid_LinUCB:
+                if Hybrid_LinUCB_Picked == article_chosen:
+                    Hybrid_LinUCB_USERS.reward +=1
+                    Hybrid_LinUCBReward = 1
+                Hybrid_LinUCB_USERS.updateParameters(Hybrid_LinUCB_PickedfeatureVector, Hybrid_LinUCBReward)                
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_HybridLinUCB_Diagnol_'+args.diagnol+'_' + timeRun
+                    model_dump(Hybrid_LinUCB_USERS, model_name, i)         
             if runGOBLin:
                 if GOBLinPicked == article_chosen:
                     GOBLin_USERS.reward +=1
@@ -382,6 +414,7 @@ if __name__ == '__main__':
                 if save_flag:
                     model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_GOBLin_Diagnol_'+args.diagnol+'_' + timeRun
                     model_dump(GOBLin_USERS, model_name, i)
+
 
             save_flag = 0
             # if the batch has ended
