@@ -15,9 +15,13 @@ from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeG
 #from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
 
 from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
-from LinUCB import LinUCBUserStruct
+from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from GOBLin import GOBLinSharedStruct
-
+from CLUB import *
+class Article():    
+    def __init__(self, id, FV=None):
+        self.id = id
+        self.featureVector = FV
 # structure to save data from random strategy as mentioned in LiHongs paper
 class randomStruct:
     def __init__(self):
@@ -28,7 +32,10 @@ class LinUCBStruct(LinUCBUserStruct):
     def __init__(self, featureDimension, lambda_):
         LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_)
         self.reward = 0
-
+class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
+    def __init__(self,featureDimension, lambda_, userFeatureList):
+        Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
+        self.reward = 0
 # structure to save data from CoLinUCB strategy
 class CoLinUCBStruct(AsyCoLinUCBUserSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W):
@@ -58,7 +65,10 @@ if __name__ == '__main__':
             M_LinUCBTotalReward = 0
             for i in range(userNum):
                 M_LinUCBTotalReward += M_LinUCB_users[i].reward    
-
+        if runCLUB:
+            CLUBTotalReward = 0
+            for i in range(OriginaluserNum): 
+                CLUBTotalReward += CLUB.users[i].reward
         #print totalObservations
         recordedStats = [articles_random.reward]
         s = 'random '+str(articles_random.reward)
@@ -82,6 +92,15 @@ if __name__ == '__main__':
             s += ' Uniform_LinUCB ' + str(Uniform_LinUCB_USERS.reward)
             recordedStats.append(Uniform_LinUCB_Picked)
             recordedStats.append(Uniform_LinUCB_USERS.reward)
+        if run_Hybrid_LinUCB:
+            s += ' Hybrid_LinUCB ' + str(Hybrid_LinUCB_USERS.reward)
+            recordedStats.append(Hybrid_LinUCB_Picked)
+            recordedStats.append(Hybrid_LinUCB_USERS.reward)
+        if runCLUB:
+            s += '  CLUB '+str(CLUBPicked)+' '+str(CLUBTotalReward)
+            recordedStats.append(CLUBPicked)
+            recordedStats.append(CLUBTotalReward)
+            recordedStats.append(NComponents)
         #print s         
         # write to file
         save_to_file(fileNameWrite, recordedStats, tim) 
@@ -96,7 +115,7 @@ if __name__ == '__main__':
     parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
                         metavar="FILE", type=lambda x: is_valid_file(parser, x))
     # Select algorithm.
-    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, or ALL.')
+    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, Hybrid_LinUCB, CLUB, or ALL.')
    
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True,
@@ -114,16 +133,28 @@ if __name__ == '__main__':
     # Cut type.
     parser.add_argument('--select_node', choices=['top100','select100'],
                         help='Select top 100 or select 50 from bottom 100 with top 50.')
-    
+    parser.add_argument('--alpha', 
+                        help='Tunable parameter in explore-exploition')
+
+    parser.add_argument('--alpha_2', 
+                        help='Tunable parameter in cluster update')
+    parser.add_argument('--binaryRatio', choices=['True', 'False'],
+                        help='Select the way of summation(If binaryRatio is True, we do direct summation else we do weighted summation(weighted by the ratio))')
     args = parser.parse_args()
     
     batchSize = 1                         # size of one batch
-    
+
     d = 25           # feature dimension
     alpha = 0.3     # control how much to explore
     lambda_ = 0.2   # regularization used in matrix A
     Gepsilon = 0.3   # Parameter in initializing GW
     
+    if args.alpha:
+        alpha = float(args.alpha)
+    if args.alpha_2:
+        alpha_2 = float(args.alpha_2)
+    if args.binaryRatio:
+        binaryRatio = args.binaryRatio
     totalObservations = 0
     TrainningObservations = 0
 
@@ -152,8 +183,10 @@ if __name__ == '__main__':
         W = normalizedNewW
     # Read Feature Vectors from File
     FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
+    #Generate user feature vectors
+    userFeatureVectors = generateUserFeature(W)
     # Decide which algorithms to run.
-    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= False
+    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= run_Hybrid_LinUCB = runCLUB= False
     if args.alg:
         if args.alg == 'CoLinUCB':
             runCoLinUCB = True
@@ -165,10 +198,14 @@ if __name__ == '__main__':
             run_M_LinUCB = True
         elif args.alg == 'Uniform_LinUCB':
             run_Uniform_LinUCB = True
+        elif args.alg == 'Hybrid_LinUCB':
+            run_Hybrid_LinUCB = True
+        elif args.alg == 'CLUB':
+            runCLUB = True
         elif args.alg == 'ALL':
             runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB =  True
     else:
-        runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
+        runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= run_Hybrid_LinUCB = runCLUB= True
 
     fileSig = 'TestCo'+args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+args.cut+'_'
 
@@ -189,6 +226,10 @@ if __name__ == '__main__':
             M_LinUCB_users.append(LinUCBStruct(d, lambda_))
     if run_Uniform_LinUCB:
         Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
+    if run_Hybrid_LinUCB:
+        Hybrid_LinUCB_USERS = Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
+    if runCLUB:
+        CLUB =CLUBAlgorithm(d,alpha, lambda_, OriginaluserNum,alpha_2)
 
      
     fileName = address + "/processed_events_shuffled.dat"
@@ -241,6 +282,10 @@ if __name__ == '__main__':
                 M_LinUCBReward = 0
             if run_Uniform_LinUCB:
                 Uniform_LinUCBReward = 0
+            if run_Hybrid_LinUCB:
+                Hybrid_LinUCBReward = 0
+            if runCLUB:
+                CLUBReward = 0
 
             TrainningObservations +=1
             userID, tim, pool_articles = parseLine(line)
@@ -264,12 +309,16 @@ if __name__ == '__main__':
             if run_Uniform_LinUCB:
                 Uniform_LinUCB_maxPTA =  float('-inf')
                 Uniform_LinUCB_Picked = None
-           
+            if run_Hybrid_LinUCB:
+                Hybrid_LinUCB_maxPTA =  float('-inf')
+                Hybrid_LinUCB_Picked = None
+
             currentUserID =label[int(userID)] 
             #print userID
             #print currentUserID
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
+            ArticlePOOL = []
             for article in pool_articles:
                 article_id = int(article.strip(']'))
                 #print article_id
@@ -277,9 +326,11 @@ if __name__ == '__main__':
                 article_featureVector =np.array(article_featureVector ,dtype=float)
                 #print article_featureVector
                 currentArticles.append(article_id)
+                ArticlePOOL.append(Article(article_id,article_featureVector)) 
                 # CoLinUCB pick article
                 if len(article_featureVector)==25:
                     #print 'Yes'
+
                     if runCoLinUCB:
                         CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
                         #print article_id, CoLinUCB_pta
@@ -312,6 +363,13 @@ if __name__ == '__main__':
                             Uniform_LinUCB_Picked = article_id
                             Uniform_LinUCB_PickedfeatureVector = article_featureVector
                             Uniform_LinUCB_maxPTA = Uniform_LinUCB_pta
+                    if run_Hybrid_LinUCB:
+                        Hybrid_LinUCB_pta = Hybrid_LinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+                        if Hybrid_LinUCB_maxPTA < Hybrid_LinUCB_pta:
+                            Hybrid_LinUCB_Picked = article_id
+                            Hybrid_LinUCB_PickedfeatureVector = article_featureVector
+                            Hybrid_LinUCB_maxPTA = Hybrid_LinUCB_pta
+
 
             # article picked by random strategy
             #article_chosen = currentArticles[0]
@@ -340,8 +398,18 @@ if __name__ == '__main__':
                 if Uniform_LinUCB_Picked == article_chosen:
                     Uniform_LinUCBReward = 1
                 Uniform_LinUCB_USERS.updateParameters(Uniform_LinUCB_PickedfeatureVector, Uniform_LinUCBReward)
-
-            
+            if run_Hybrid_LinUCB:
+                if Hybrid_LinUCB_Picked == article_chosen:
+                    Hybrid_LinUCB_USERS.reward +=1
+                    Hybrid_LinUCBReward = 1
+                Hybrid_LinUCB_USERS.updateParameters(Hybrid_LinUCB_PickedfeatureVector, Hybrid_LinUCBReward, currentUserID)  
+            if runCLUB:
+                CLUB_PickedfeatureVector, CLUBPicked= CLUB.decide(ArticlePOOL,currentUserID)
+                if CLUBPicked == article_chosen:
+                    CLUB.users[int(currentUserID)].reward +=1
+                    CLUBReward = 1
+                CLUB.updateParameters(CLUB_PickedfeatureVector, CLUBReward,currentUserID)
+                NComponents=CLUB.updateGraphClusters(currentUserID,binaryRatio)
             # ar the batch has ended
             #if TrainningObservations%batchSize==0:
             #    print 'TrainningObservations:', TrainningObservations
@@ -362,7 +430,10 @@ if __name__ == '__main__':
                 M_LinUCBReward = 0
             if run_Uniform_LinUCB:
                 Uniform_LinUCBReward = 0
-
+            if run_Hybrid_LinUCB:
+                Hybrid_LinUCBReward = 0
+            if runCLUB:
+                CLUBReward = 0
             totalObservations +=1
             userID, tim, pool_articles = parseLine(line)
             #tim, article_chosen, click, user_features, pool_articles = parseLine(line)
@@ -385,10 +456,14 @@ if __name__ == '__main__':
             if run_Uniform_LinUCB:
                 Uniform_LinUCB_maxPTA =  float('-inf')
                 Uniform_LinUCB_Picked = None
-           
+            if run_Hybrid_LinUCB:
+                Hybrid_LinUCB_maxPTA =  float('-inf')
+                Hybrid_LinUCB_Picked = None
+
             currentUserID =label[int(userID)] 
             article_chosen = int(pool_articles[0])  
             #for article in np.random.permutation(pool_articles) :
+            ArticlePOOL = []
             for article in pool_articles:
                 article_id = int(article.strip(']'))
                 #print article_id
@@ -396,6 +471,7 @@ if __name__ == '__main__':
                 article_featureVector =np.array(article_featureVector ,dtype=float)
                 #print article_featureVector
                 currentArticles.append(article_id)
+                ArticlePOOL.append(Article(article_id,article_featureVector)) 
                 # CoLinUCB pick article
                 if len(article_featureVector)==25:
                     #print 'Yes'
@@ -431,7 +507,12 @@ if __name__ == '__main__':
                             Uniform_LinUCB_Picked = article_id
                             Uniform_LinUCB_PickedfeatureVector = article_featureVector
                             Uniform_LinUCB_maxPTA = Uniform_LinUCB_pta
-
+                    if run_Hybrid_LinUCB:
+                        Hybrid_LinUCB_pta = Hybrid_LinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+                        if Hybrid_LinUCB_maxPTA < Hybrid_LinUCB_pta:
+                            Hybrid_LinUCB_Picked = article_id
+                            Hybrid_LinUCB_PickedfeatureVector = article_featureVector
+                            Hybrid_LinUCB_maxPTA = Hybrid_LinUCB_pta
             # article picked by random strategy
             #article_chosen = currentArticles[0]
             #print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
@@ -466,7 +547,18 @@ if __name__ == '__main__':
                     Uniform_LinUCB_USERS.reward +=1
                     Uniform_LinUCBReward = 1
                 Uniform_LinUCB_USERS.updateParameters(Uniform_LinUCB_PickedfeatureVector, Uniform_LinUCBReward)
-
+            if run_Hybrid_LinUCB:
+                if Hybrid_LinUCB_Picked == article_chosen:
+                    Hybrid_LinUCB_USERS.reward +=1
+                    Hybrid_LinUCBReward = 1
+                Hybrid_LinUCB_USERS.updateParameters(Hybrid_LinUCB_PickedfeatureVector, Hybrid_LinUCBReward, currentUserID)  
+            if runCLUB:
+                CLUB_PickedfeatureVector, CLUBPicked= CLUB.decide(ArticlePOOL,currentUserID)
+                if CLUBPicked == article_chosen:
+                    CLUB.users[int(currentUserID)].reward +=1
+                    CLUBReward = 1
+                CLUB.updateParameters(CLUB_PickedfeatureVector, CLUBReward,currentUserID)
+                NComponents=CLUB.updateGraphClusters(currentUserID,binaryRatio)
             
             # ar the batch has ended
             if totalObservations%batchSize==0:

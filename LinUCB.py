@@ -1,5 +1,5 @@
 import numpy as np
-from YahooExp_util_functions import *
+from YahooExp_util_functions import vectorize
 
 class LinUCBUserStruct:
 	def __init__(self, featureDimension,lambda_):
