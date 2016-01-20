@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import argparse # For argument parsing
 #import os.path
 from conf import *  # it saves the address of data stored and where to save the data produced by algorithms
