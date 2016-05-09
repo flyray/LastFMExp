@@ -54,6 +54,7 @@ def is_valid_file(parser, arg):
         return open(arg, 'r')  # return an open file handle
 
 if __name__ == '__main__':
+    np.set_printoptions(threshold=np.nan)
     # regularly print stuff to see if everything is going alright.
     # this function is inside main so that it shares variables with main and I dont wanna have large number of function arguments
     def printWrite():
@@ -332,7 +333,7 @@ if __name__ == '__main__':
                     #print 'Yes'
 
                     if runCoLinUCB:
-                        CoLinUCB_pta = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
+                        CoLinUCB_pta, mean, var = CoLinUCB_USERS.getProb(alpha, article_featureVector, currentUserID)
                         #print article_id, CoLinUCB_pta
                         if CoLinUCB_maxPTA < CoLinUCB_pta:
                             CoLinUCBPicked = article_id    # article picked by CoLinUCB
@@ -381,7 +382,9 @@ if __name__ == '__main__':
                 if CoLinUCBPicked == article_chosen:
                     CoLinReward = 1
                 CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
-                
+                fout=open('CoLinDebugHCDM2','a+')
+                fout.write(str(CoLinUCBPicked)+' '+str(mean)+' '+str(var)+' '+str(CoLinUCB_PickedfeatureVector)+'\n')
+                fout.close()
             if runGOBLin:
                 if GOBLinPicked == article_chosen:
                     GOBLinReward = 1
@@ -413,6 +416,8 @@ if __name__ == '__main__':
             # ar the batch has ended
             #if TrainningObservations%batchSize==0:
             #    print 'TrainningObservations:', TrainningObservations
+            if totalObservations%batchSize==0:
+                printWrite()
 
     with open(SecondPartFileName, 'r') as f2:
         f2.readline()

@@ -32,7 +32,7 @@ class CoLinUCBUserSharedStruct(object):
 		var = np.sqrt(np.dot(np.dot(TempFeatureV, self.CCA), TempFeatureV))
 		pta = mean + alpha * var
 		#return round(pta,12)
-		return pta
+		return pta, mean, var
 
 
 class AsyCoLinUCBUserSharedStruct(CoLinUCBUserSharedStruct):	
@@ -41,7 +41,9 @@ class AsyCoLinUCBUserSharedStruct(CoLinUCBUserSharedStruct):
 		
 		self.A += np.outer(X, X)	
 		self.b += click*X
-
+		fout=open('CoLinPower','a+')
+		fout.write(str(self.A)+'\n')
+		fout.close()
 		self.AInv = np.linalg.inv(self.A)
 
 		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(articlePicked_FeatureVector)) 
