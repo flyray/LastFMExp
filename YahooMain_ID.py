@@ -12,7 +12,7 @@ from scipy.spatial import distance
 from YahooExp_util_functions import *
 
 
-from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
+from CoLin import CoLinUCBUserSharedStruct, CoLinUCBAlgorithm, CoLinUCBUserSharedStruct
 from GOBLin import GOBLinSharedStruct
 from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from EgreedyContextual import EgreedyContextualSharedStruct
@@ -23,22 +23,22 @@ class randomStruct:
 		self.learn_stats = articleAccess()
 
 # structure to save data from CoLinUCB strategy
-class CoLinUCBStruct(AsyCoLinUCBUserSharedStruct):
-	def __init__(self, featureDimension, lambda_, userNum, W):
-		AsyCoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
+class CoLinUCBStruct(CoLinUCBUserSharedStruct):
+	def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
+		CoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse =RankoneInverse)
 		self.learn_stats = articleAccess()	
 
 class GOBLinStruct(GOBLinSharedStruct):
-	def __init__(self, featureDimension, lambda_, userNum, W):
-		GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
+	def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
+		GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
 		self.learn_stats = articleAccess()	
 class LinUCBStruct(LinUCBUserStruct):
-	def __init__(self, featureDimension, lambda_):
-		LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_)
+	def __init__(self, featureDimension, lambda_, RankoneInverse = False):
+		LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_, RankoneInverse = RankoneInverse)
 		self.learn_stats = articleAccess()
 class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
-	def __init__(self,featureDimension, lambda_, userFeatureList):
-		Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
+	def __init__(self,featureDimension, lambda_, userFeatureList, RankoneInverse = False):
+		Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList, RankoneInverse)
 		self.learn_stats = articleAccess()
 class EgreedyContextualStruct(EgreedyContextualSharedStruct):
 	def __init__(self, Tu, m, lambd, alpha, userNum, itemNum,k, feature_dim, tau=0.05, r=0, init='zero'):
@@ -121,6 +121,8 @@ if __name__ == '__main__':
 
 	parser.add_argument('--showheatmap', action='store_true',
 	                help='Show heatmap of relation matrix.') 
+	parser.add_argument('--RankoneInverse', action='store_true',
+	                help='Use Rankone Correction to do matrix inverse.') 
 	parser.add_argument('--userNum', dest = 'userNum', help = 'Set the userNum, can be 20, 40, 80, 160')
 
 	parser.add_argument('--Sparsity', dest = 'SparsityLevel', help ='Set the SparsityLevel by choosing the top M most connected users, should be smaller than userNum, when equal to userNum, we are using a full connected graph')
@@ -133,6 +135,7 @@ if __name__ == '__main__':
 	SparsityLevel = int(args.SparsityLevel)
 	yahooData_address = str(args.Yahoo_save_address)
 	DiagType = str(args.DiagType)
+	RankoneInverse = args.RankoneInverse
 	
 	timeRun = datetime.datetime.now().strftime('_%m_%d_%H_%M') 	# the current data time
 	dataDays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']
@@ -163,13 +166,13 @@ if __name__ == '__main__':
 	GW = initializeGW(W , epsilon)
  	
 	articles_random = randomStruct()
-	CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W )
-	GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
-	LinUCB_USERS = LinUCBStruct(d, lambda_)
+	CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W , RankoneInverse)
+	GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW, RankoneInverse)
+	LinUCB_USERS = LinUCBStruct(d, lambda_, RankoneInverse)
 	LinUCB_users = []
 	for i in range(userNum):
-		LinUCB_users.append(LinUCBStruct(d, lambda_ ))
-	HybridLinUCB_USERS= Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
+		LinUCB_users.append(LinUCBStruct(d, lambda_,RankoneInverse ))
+	HybridLinUCB_USERS= Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors, RankoneInverse)
 	EgreedyContextual = EgreedyContextualStruct(Tu= 200, m=10, lambd=0.1, alpha=2000, userNum=userNum, itemNum=200000, k=2+5, feature_dim = 5, init='zero')
 	for dataDay in dataDays:
 		fileName = yahooData_address + "/ydata-fp-td-clicks-v1_0.200905" + dataDay	+'.'+ str(userNum) +'.userID'

@@ -5,7 +5,7 @@ from util_functions import vectorize, matrixize
 from CoLin import CoLinUCBAlgorithm, CoLinUCB_SelectUserAlgorithm
 
 class GOBLinSharedStruct:
-	def __init__(self, featureDimension, lambda_, userNum, W):
+	def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse):
 		self.W = W
 		self.userNum = userNum
 		self.d = int(featureDimension)
@@ -16,6 +16,7 @@ class GOBLinSharedStruct:
 		self.theta = np.dot(self.AInv, self.b)
 		self.STBigWInv = sqrtm( np.linalg.inv(np.kron(W, np.identity(n=self.d))) )
 		self.STBigW = sqrtm(np.kron(W, np.identity(n=self.d)))
+		self.RankoneInverse = RankoneInverse
 	
 	def updateParameters(self, articlePicked_FeatureVector, click, userID):
 		#featureVectorM = np.zeros(shape = (self.d, self.userNum))
@@ -29,7 +30,12 @@ class GOBLinSharedStruct:
 		#print 'CoFeaVtype', type(CoFeaV), type(self.b), self.b.shape, CoFeaV.shape
 
 		self.b = self.b+ float(click) * CoFeaV
-		self.AInv = np.linalg.inv(self.A)
+
+		if self.RankoneInverse:
+			temp = np.dot(self.AInv, CoFeaV)
+			self.AInv = self.AInv - (np.outer(temp,temp))/(1.0+np.dot(np.transpose(CoFeaV),temp))
+		else:
+			self.AInv =  np.linalg.inv(self.A)
 
 		self.theta = np.dot(self.AInv, self.b)
 	
@@ -47,9 +53,9 @@ class GOBLinSharedStruct:
 	
 # inherite from CoLinUCBAlgorithm
 class GOBLinAlgorithm(CoLinUCBAlgorithm):
-	def __init__(self, dimension, alpha, lambda_, n, W):
-		CoLinUCBAlgorithm.__init__(self, dimension = dimension, alpha = alpha, lambda_ = lambda_, n=n, W= W)
-		self.USERS = GOBLinSharedStruct(dimension, lambda_, n, W)
+	def __init__(self, dimension, alpha, lambda_, n, W, RankoneInverse = False):
+		CoLinUCBAlgorithm.__init__(self, dimension = dimension, alpha = alpha, lambda_ = lambda_, n=n, W= W, RankoneInverse = RankoneInverse)
+		self.USERS = GOBLinSharedStruct(dimension, lambda_, n, W, RankoneInverse)
 
 		self.CanEstimateUserPreference = False
 		self.CanEstimateCoUserPreference = True
@@ -61,9 +67,9 @@ class GOBLinAlgorithm(CoLinUCBAlgorithm):
 
 #inherite from CoLinUCB_SelectUserAlgorithm
 class GOBLin_SelectUserAlgorithm(CoLinUCB_SelectUserAlgorithm):
-	def __init__(self, dimension, alpha, lambda_, n, W):
-		CoLinUCB_SelectUserAlgorithm.__init__(self, dimension = dimension, alpha = alpha, lambda_ = lambda_, n = n, W = W)
-		self.USERS = GOBLinSharedStruct(dimension, lambda_, n, W)
+	def __init__(self, dimension, alpha, lambda_, n, W, RankoneInverse = False):
+		CoLinUCB_SelectUserAlgorithm.__init__(self, dimension = dimension, alpha = alpha, lambda_ = lambda_, n = n, W = W, RankoneInverse = RankoneInverse)
+		self.USERS = GOBLinSharedStruct(dimension, lambda_, n, W, RankoneInverse)
 		self.CanEstimateUserPreference = False
 		self.CanEstimateCoUserPreference = True 
 		self.CanEstimateW = False

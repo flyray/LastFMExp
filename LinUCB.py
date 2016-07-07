@@ -2,17 +2,23 @@ import numpy as np
 from YahooExp_util_functions import vectorize
 
 class LinUCBUserStruct:
-	def __init__(self, featureDimension,lambda_):
+	def __init__(self, featureDimension,lambda_, RankoneInverse):
 		self.d = featureDimension
 		self.A = lambda_*np.identity(n = self.d)
 		self.b = np.zeros(self.d)
 		self.AInv = np.linalg.inv(self.A)
 		self.UserTheta = np.zeros(self.d)
+		self.RankoneInverse = RankoneInverse
 		
 	def updateParameters(self, articlePicked_FeatureVector, click):
 		self.A += np.outer(articlePicked_FeatureVector,articlePicked_FeatureVector)
 		self.b += articlePicked_FeatureVector*click
-		self.AInv = np.linalg.inv(self.A)
+		if self.RankoneInverse:
+			temp = np.dot(self.AInv, articlePicked_FeatureVector)
+			self.AInv = self.AInv - (np.outer(temp,temp))/(1.0+np.dot(np.transpose(articlePicked_FeatureVector),temp))
+		else:
+			self.AInv =  np.linalg.inv(self.A)
+
 		self.UserTheta = np.dot(self.AInv, self.b)
 		
 	def getTheta(self):
@@ -28,8 +34,8 @@ class LinUCBUserStruct:
 		return pta
 
 class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):
-	def __init__(self, userFeature, lambda_):
-		LinUCBUserStruct.__init__(self, len(userFeature), lambda_)
+	def __init__(self, userFeature, lambda_, RankoneInverse):
+		LinUCBUserStruct.__init__(self, len(userFeature), lambda_, RankoneInverse)
 		
 		self.B = np.zeros([self.d, self.d**2])
 		self.userFeature = userFeature
@@ -43,7 +49,7 @@ class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):
 
 
 class Hybrid_LinUCBUserStruct:
-	def __init__(self, featureDimension,  lambda_, userFeatureList):
+	def __init__(self, featureDimension,  lambda_, userFeatureList, RankoneInverse = False):
 		self.k = featureDimension**2
 		self.A_z = lambda_*np.identity(n = self.k)
 		self.b_z = np.zeros(self.k)
@@ -52,7 +58,7 @@ class Hybrid_LinUCBUserStruct:
 		self.users = []
 
 		for i in range(len(userFeatureList)):
-			self.users.append(Hybrid_LinUCB_singleUserStruct(userFeatureList[i], lambda_ ))
+			self.users.append(Hybrid_LinUCB_singleUserStruct(userFeatureList[i], lambda_ , RankoneInverse))
 
 	def updateParameters(self, articlePicked_FeatureVector, click, userID):
 		z = vectorize( np.outer(self.users[userID].userFeature, articlePicked_FeatureVector))
@@ -87,10 +93,10 @@ class Hybrid_LinUCBUserStruct:
 
 
 class Uniform_LinUCBAlgorithm(object):
-	def __init__(self, dimension, alpha, lambda_):
+	def __init__(self, dimension, alpha, lambda_, RankoneInverse = False):
 		self.dimension = dimension
 		self.alpha = alpha
-		self.USER = LinUCBUserStruct(dimension, lambda_)
+		self.USER = LinUCBUserStruct(dimension, lambda_, RankoneInverse)
 
 		self.CanEstimateUserPreference = False
 		self.CanEstimateCoUserPreference = True 
@@ -112,10 +118,10 @@ class Uniform_LinUCBAlgorithm(object):
 
 
 class Hybrid_LinUCBAlgorithm(object):
-	def __init__(self, dimension, alpha, lambda_, userFeatureList):
+	def __init__(self, dimension, alpha, lambda_, userFeatureList, RankoneInverse = False):
 		self.dimension = dimension
 		self.alpha = alpha
-		self.USER = Hybrid_LinUCBUserStruct(dimension, lambda_, userFeatureList)
+		self.USER = Hybrid_LinUCBUserStruct(dimension, lambda_, userFeatureList, RankoneInverse)
 
 		self.CanEstimateUserPreference = False
 		self.CanEstimateCoUserPreference = True 
@@ -138,11 +144,11 @@ class Hybrid_LinUCBAlgorithm(object):
 
 #---------------LinUCB(fixed user order) algorithm---------------
 class N_LinUCBAlgorithm:
-	def __init__(self, dimension, alpha, lambda_, n):  # n is number of users
+	def __init__(self, dimension, alpha, lambda_, n, RankoneInverse = False):  # n is number of users
 		self.users = []
 		#algorithm have n users, each user has a user structure
 		for i in range(n):
-			self.users.append(LinUCBUserStruct(dimension, lambda_ )) 
+			self.users.append(LinUCBUserStruct(dimension, lambda_ , RankoneInverse)) 
 
 		self.dimension = dimension
 		self.alpha = alpha
@@ -172,8 +178,8 @@ class N_LinUCBAlgorithm:
 
 #-----------LinUCB select user algorithm-----------
 class LinUCB_SelectUserAlgorithm(N_LinUCBAlgorithm):
-	def __init__(self, dimension, alpha, lambda_, n):  # n is number of users
-		N_LinUCBAlgorithm.__init__(self, dimension, alpha, lambda_, n)
+	def __init__(self, dimension, alpha, lambda_, n, RankoneInverse = False):  # n is number of users
+		N_LinUCBAlgorithm.__init__(self, dimension, alpha, lambda_, n, RankoneInverse)
 
 	def decide(self, pool_articles, AllUsers):
 		maxPTA = float('-inf')

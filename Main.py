@@ -14,7 +14,7 @@ from scipy.spatial import distance
 from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeGW, parseLine, save_to_file, initializeW_clustering, initializeGW_clustering
 #from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
 
-from CoLin import AsyCoLinUCBUserSharedStruct, AsyCoLinUCBAlgorithm, CoLinUCBUserSharedStruct
+from CoLin import CoLinUCBUserSharedStruct, CoLinUCBAlgorithm
 from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from GOBLin import GOBLinSharedStruct
 
@@ -25,22 +25,22 @@ class randomStruct:
 
 # structure to save data from LinUCB strategy
 class LinUCBStruct(LinUCBUserStruct):
-    def __init__(self, featureDimension, lambda_):
-        LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_)
+    def __init__(self, featureDimension, lambda_, RankoneInverse = False):
+        LinUCBUserStruct.__init__(self, featureDimension= featureDimension, lambda_ = lambda_, RankoneInverse = RankoneInverse)
         self.reward = 0
 class Hybrid_LinUCBStruct(Hybrid_LinUCBUserStruct):
-    def __init__(self,featureDimension, lambda_, userFeatureList):
-        Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList)
+    def __init__(self,featureDimension, lambda_, userFeatureList, RankoneInverse = False):
+        Hybrid_LinUCBUserStruct.__init__(self, featureDimension,  lambda_, userFeatureList, RankoneInverse)
         self.reward = 0
 # structure to save data from CoLinUCB strategy
-class CoLinUCBStruct(AsyCoLinUCBUserSharedStruct):
-    def __init__(self, featureDimension, lambda_, userNum, W):
-        AsyCoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
+class CoLinUCBStruct(CoLinUCBUserSharedStruct):
+    def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
+        CoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
         self.reward = 0  
 
 class GOBLinStruct(GOBLinSharedStruct):
-    def __init__(self, featureDimension, lambda_, userNum, W):
-        GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W)
+    def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
+        GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
         self.reward = 0
     
 def is_valid_file(parser, arg):
@@ -110,6 +110,9 @@ if __name__ == '__main__':
     # Whether show heatmap of relation matrix.
     parser.add_argument('--showheatmap', action='store_true',
                         help='Show heatmap of relation matrix.') 
+
+    parser.add_argument('--RankoneInverse', action='store_true',
+                    help='Use Rankone Correction to do matrix inverse.') 
     # Dataset.
     parser.add_argument('--dataset', required=True, choices=['LastFM', 'Delicious'],
                         help='Select Dataset to run, could be LastFM or Delicious.')
@@ -135,6 +138,7 @@ if __name__ == '__main__':
     Gepsilon = 0.3   # Parameter in initializing GW
     
     totalObservations = 0
+    RankoneInverse =args.RankoneInverse
 
  
     OriginaluserNum = 2100
@@ -216,23 +220,23 @@ if __name__ == '__main__':
             Uniform_LinUCB_USERS = obj
     else:
         if runCoLinUCB:
-            CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W)
+            CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W, RankoneInverse)
         if runGOBLin:
-            GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW)
+            GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW, RankoneInverse)
 
         if runLinUCB:
             LinUCB_users = []  
             for i in range(OriginaluserNum):
-                LinUCB_users.append(LinUCBStruct(d, lambda_ ))
+                LinUCB_users.append(LinUCBStruct(d, lambda_ , RankoneInverse))
 
         if run_M_LinUCB:
             M_LinUCB_users = []
             for i in range(userNum):
-                M_LinUCB_users.append(LinUCBStruct(d, lambda_))
+                M_LinUCB_users.append(LinUCBStruct(d, lambda_, RankoneInverse))
         if run_Uniform_LinUCB:
-            Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_)
+            Uniform_LinUCB_USERS = LinUCBStruct(d, lambda_, RankoneInverse)
         if run_Hybrid_LinUCB:
-            Hybrid_LinUCB_USERS = Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors)
+            Hybrid_LinUCB_USERS = Hybrid_LinUCBStruct(d, lambda_, userFeatureVectors, RankoneInverse)
     fileNameWrite = os.path.join(save_address, fileSig + timeRun + '.csv')
     #FeatureVectorsFileName =  LastFM_address + '/Arm_FeatureVectors.dat'
 
