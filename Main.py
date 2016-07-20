@@ -17,6 +17,7 @@ from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeG
 from CoLin import CoLinUCBUserSharedStruct, CoLinUCBAlgorithm
 from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from GOBLin import GOBLinSharedStruct
+from W_Alg import *
 
 # structure to save data from random strategy as mentioned in LiHongs paper
 class randomStruct:
@@ -37,7 +38,10 @@ class CoLinUCBStruct(CoLinUCBUserSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
         CoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
         self.reward = 0  
-
+class LearnWStruct(WStruct_batch_Cons):
+    def __init__(self, featureDimension, lambda_, userNum, RankoneInverse = False):
+        WStruct_batch_Cons.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, windowSize = userNum, RankoneInverse =RankoneInverse)
+        self.reward = 0  
 class GOBLinStruct(GOBLinSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
         GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
@@ -69,6 +73,10 @@ if __name__ == '__main__':
             s += '  CoLin '+str(CoLinUCB_USERS.reward)
             recordedStats.append(CoLinUCBPicked)
             recordedStats.append(CoLinUCB_USERS.reward)
+        if runLearnW:
+            s += '  LearnW '+str(LearnW_USERS.reward)
+            recordedStats.append(LearnWPicked)
+            recordedStats.append(LearnWB_USERS.reward)
         if runGOBLin:
             s += '  GOBLin '+str(GOBLin_USERS.reward)
             recordedStats.append(GOBLinPicked)
@@ -103,7 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--clusterfile', dest="clusterfile", help="input an clustering label file", 
                         metavar="FILE", type=lambda x: is_valid_file(parser, x))
     # Select algorithm.
-    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, Hybrid_LinUCB, or ALL. No alg argument means Random.')
+    parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLinUCB, GOBLin, LinUCB, M_LinUCB, Uniform_LinUCB, Hybrid_LinUCB, LearnW, or ALL. No alg argument means Random.')
    
     # Designate relation matrix diagnol.
     parser.add_argument('--diagnol', dest='diagnol', required=True, help='Designate relation matrix diagnol, could be 0, 1, or Origin.') 
@@ -173,6 +181,8 @@ if __name__ == '__main__':
     if args.alg:
         if args.alg == 'CoLinUCB':
             runCoLinUCB = True
+        elif args.alg == 'LearnW':
+            runLearnW = True
         elif args.alg == 'GOBLin':
             runGOBLin = True
         elif args.alg == 'LinUCB':
@@ -184,7 +194,7 @@ if __name__ == '__main__':
         elif args.alg == 'Hybrid_LinUCB':
             run_Hybrid_LinUCB = True            
         elif args.alg == 'ALL':
-            runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=run_Hybrid_LinUCB=True
+            runCoLinUCB = runLearnW = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB=run_Hybrid_LinUCB=True
     else:
         args.alg = 'Random'
         #runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= True
@@ -210,6 +220,8 @@ if __name__ == '__main__':
             print finished_line
         if runCoLinUCB:
             CoLinUCB_USERS = obj
+        if runLearnW:
+            LearnW_USERS = obj
         if runGOBLin:
             GOBLin_USERS = obj
         if runLinUCB:
@@ -221,6 +233,8 @@ if __name__ == '__main__':
     else:
         if runCoLinUCB:
             CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W, RankoneInverse)
+        if runLearnW:
+            LearnW_USERS = LearnWStruct(d, lambda_ ,userNum, RankoneInverse)
         if runGOBLin:
             GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW, RankoneInverse)
 
@@ -247,6 +261,8 @@ if __name__ == '__main__':
         f.write('\n, Time, RandomReward; ')
         if runCoLinUCB:
             f.write('CoLinReward; ')
+        if runLearnW:
+            f.write('LearnWReward')
         if runGOBLin:
             f.write('GOBLinReward; ')
         if runLinUCB:
@@ -273,6 +289,8 @@ if __name__ == '__main__':
                     continue
             if runCoLinUCB:
                 CoLinReward = 0
+            if runLearnW:
+                LearnWReward = 0
             if runGOBLin:
                 GOBLinReward = 0
             if runLinUCB:
@@ -294,6 +312,9 @@ if __name__ == '__main__':
             if runCoLinUCB:
                 CoLinUCB_maxPTA = float('-inf')
                 CoLinUCBPicked = None  
+            if runLearnW:
+                LearnW_maxPTA = float('-inf')
+                LearnWPicked = None  
             if runGOBLin:
                 GOBLin_maxPTA = float('-inf')
                 GOBLinPicked = None 
@@ -331,6 +352,15 @@ if __name__ == '__main__':
                             CoLinUCB_PickedfeatureVector = article_featureVector
                             CoLinUCB_maxPTA = CoLinUCB_pta
                             #print CoLinUCBPicked
+                    if runLearnW:                        
+                        LearnW_pta = LearnW_USERS.getProb(alpha, article_featureVector, currentUserID)
+                        #print article_id, CoLinUCB_pta
+                        if LearnW_maxPTA < LearnW_pta:
+                            LearnWPicked = article_id    # article picked by CoLinUCB
+                            LearnW_PickedfeatureVector = article_featureVector
+                            LearnW_maxPTA = LearnW_pta
+                            #print CoLinUCBPicked
+
                     if runGOBLin:
                         GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
                         if GOBLin_maxPTA < GOBLin_pta:
@@ -376,7 +406,15 @@ if __name__ == '__main__':
                 CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector,CoLinReward, currentUserID)
                 if save_flag:
                     model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_CoLinUCB_Diagnol_'+args.diagnol+'_' + timeRun                    
-                    model_dump(CoLinUCB_USERS, model_name, i)       
+                    model_dump(CoLinUCB_USERS, model_name, i) 
+            if runLearnW:
+                if LearnWPicked == article_chosen:
+                    CLearnW_USERS.reward +=1
+                    LearnWReward = 1
+                LearnW_USERS.updateParameters(LearnW_PickedfeatureVector,LearnWReward, currentUserID)
+                if save_flag:
+                    model_name = args.dataset+'_'+str(nClusters)+'_shuffled_Clustering_CoLinUCB_Diagnol_'+args.diagnol+'_' + timeRun                    
+                    model_dump(LearnW_USERS, model_name, i)        
 
             if runLinUCB:
                 if LinUCBPicked == article_chosen:

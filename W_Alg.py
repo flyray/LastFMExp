@@ -1,4 +1,4 @@
-zfimport numpy as np
+import numpy as np
 from scipy.linalg import sqrtm
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
