@@ -62,7 +62,7 @@ if __name__ == '__main__':
 		if algName == 'LearnW':
 			LearnWCTR = LearnW_USERS.learn_stats.updateCTR()
 			print totalObservations
-			print 'random', randomLearnCTR,'  CoLin', LearnWCTR
+			print 'random', randomLearnCTR,' LearnW', LearnWCTR
 			recordedStats = [randomLearnCTR, LearnWCTR, LearnW_USERS.learn_stats.accesses, LearnW_USERS.learn_stats.clicks]	
 		if algName =='GOBLin':
 			GOBLinCTR = GOBLin_USERS.learn_stats.updateCTR()

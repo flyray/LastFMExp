@@ -142,7 +142,7 @@ class WStruct_batch_Cons:
 					self.W.T[i] = res.x
 			self.windowSize = self.windowSize*2 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
-		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(articlePicked_fv)))
+		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
 
 		self.BigTheta = np.kron(np.identity(n=self.userNum) , self.UserTheta)
