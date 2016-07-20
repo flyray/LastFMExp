@@ -16,6 +16,7 @@ from CoLin import CoLinUCBUserSharedStruct, CoLinUCBAlgorithm, CoLinUCBUserShare
 from GOBLin import GOBLinSharedStruct
 from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from EgreedyContextual import EgreedyContextualSharedStruct
+from W_Alg import WStruct_batch_Cons
 
 # structure to save data from random strategy as mentioned in LiHongs paper
 class randomStruct:
@@ -27,7 +28,10 @@ class CoLinUCBStruct(CoLinUCBUserSharedStruct):
 	def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
 		CoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse =RankoneInverse)
 		self.learn_stats = articleAccess()	
-
+class LearnWStruct(WStruct_batch_Cons):
+	def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
+		WStruct_batch_Cons.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, windowSize = userNum, RankoneInverse =RankoneInverse)
+		self.learn_stats = articleAccess()	
 class GOBLinStruct(GOBLinSharedStruct):
 	def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
 		GOBLinSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
@@ -55,6 +59,11 @@ if __name__ == '__main__':
 			print totalObservations
 			print 'random', randomLearnCTR,'  CoLin', CoLinUCBCTR
 			recordedStats = [randomLearnCTR, CoLinUCBCTR, CoLinUCB_USERS.learn_stats.accesses, CoLinUCB_USERS.learn_stats.clicks]	
+		if algName == 'LearnW':
+			LearnWCTR = LearnW_USERS.learn_stats.updateCTR()
+			print totalObservations
+			print 'random', randomLearnCTR,'  CoLin', LearnWCTR
+			recordedStats = [randomLearnCTR, LearnWCTR, LearnW_USERS.learn_stats.accesses, LearnW_USERS.learn_stats.clicks]	
 		if algName =='GOBLin':
 			GOBLinCTR = GOBLin_USERS.learn_stats.updateCTR()
 			print totalObservations
@@ -117,7 +126,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description = '')
 	parser.add_argument('--YahooDataFile', dest="Yahoo_save_address", help="input the adress for Yahoo data")
-	parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLin, GOBLin, LinUCB, HybridLinUCB, EgreedyContextual')
+	parser.add_argument('--alg', dest='alg', help='Select a specific algorithm, could be CoLin, GOBLin, LinUCB, HybridLinUCB, LearnW, EgreedyContextual')
 
 	parser.add_argument('--showheatmap', action='store_true',
 	                help='Show heatmap of relation matrix.') 
@@ -167,6 +176,7 @@ if __name__ == '__main__':
  	
 	articles_random = randomStruct()
 	CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W , RankoneInverse)
+	LearnW_USERS =  LearnWStruct(d, lambda_ ,userNum, userNum , RankoneInverse)
 	GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW, RankoneInverse)
 	LinUCB_USERS = LinUCBStruct(d, lambda_, RankoneInverse)
 	LinUCB_users = []
@@ -220,6 +230,11 @@ if __name__ == '__main__':
 				EgreedyContextual_maxPTA = float('-inf')
 				EgreedyContextualPicked = None
 				EgreedyContextual_PickedfeatureVector = np.array([0,0,0,0,0])
+
+				LearnW_maxPTA = float('-inf')
+				LearnWPicked = None  
+				LearnWPickedUser = None    
+				LearnW_PickedfeatureVector = np.array([0,0,0,0,0])
    
 				for article in pool_articles:
 					article_id = int(article[0])
@@ -233,6 +248,13 @@ if __name__ == '__main__':
 								CoLinUCBPicked = article_id    # article picked by CoLinUCB
 								CoLinUCB_PickedfeatureVector = article_featureVector
 								CoLinUCB_maxPTA = CoLinUCB_pta
+						if algName == 'LearnW':
+							LearnW_pta = LearnW_USERS.getProb(alpha, article_featureVector, currentUserID)
+							if LearnW_maxPTA < LearnW_pta:
+								LearnWPicked = article_id    # article picked by CoLinUCB
+								LearnW_PickedfeatureVector = article_featureVector
+								LearnW_maxPTA = LearnW_pta
+
 						if algName == 'GOBLin':
 							GOBLin_pta = GOBLin_USERS.getProb(alpha, article_featureVector, currentUserID)
 							if GOBLin_maxPTA < GOBLin_pta:
@@ -277,6 +299,11 @@ if __name__ == '__main__':
 					if CoLinUCBPicked == article_chosen:
 						CoLinUCB_USERS.learn_stats.addrecord(click)
 						CoLinUCB_USERS.updateParameters(CoLinUCB_PickedfeatureVector, click, currentUserID)
+						calculateStat()
+				if algName == 'LearnW':
+					if LearnWPicked == article_chosen:
+						LearnW_USERS.learn_stats.addrecord(click)
+						LearnW_USERS.updateParameters(LearnW_PickedfeatureVector, click, currentUserID)
 						calculateStat()
 
 				if algName == 'GOBLin':
