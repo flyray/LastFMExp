@@ -1,4 +1,4 @@
-import numpy as np
+zfimport numpy as np
 from scipy.linalg import sqrtm
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import normalize
@@ -56,7 +56,7 @@ def getbounds(dim):
 
 
 class WStruct_batch_Cons:
-	def __init__(self, featureDimension, lambda_, eta_, userNum, windowSize, RankoneInverse):
+	def __init__(self, featureDimension, lambda_,  userNum, windowSize, RankoneInverse):
 		self.windowSize = windowSize
 		self.counter = 0
 		self.RankoneInverse = RankoneInverse
@@ -84,11 +84,11 @@ class WStruct_batch_Cons:
 			self.W_X_arr.append([])
 			self.W_y_arr.append([])
 		
-	def updateParameters(self, articlePicked, click,  userID):	
+	def updateParameters(self, featureVector, click,  userID):	
 		self.counter +=1
 		self.Wlong = vectorize(self.W)
-		featureDimension = len(articlePicked.featureVector)
-		T_X = vectorize(np.outer(articlePicked.featureVector, self.W.T[userID])) 
+		featureDimension = len(featureVector)
+		T_X = vectorize(np.outer(featureVector, self.W.T[userID])) 
 		self.A += np.outer(T_X, T_X)	
 		self.b += click*T_X
 		if self.RankoneInverse:
@@ -96,12 +96,12 @@ class WStruct_batch_Cons:
 			self.AInv = self.AInv - (np.outer(temp,temp))/(1.0+np.dot(np.transpose(T_X),temp))
 		else:
 			self.AInv =  np.linalg.inv(self.A)
-		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(articlePicked.featureVector)) 
+		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(featureVector)) 
 
 		Xi_Matirx = np.zeros(shape = (featureDimension, self.userNum))
-		Xi_Matirx.T[userID] = articlePicked.featureVector
+		Xi_Matirx.T[userID] = featureVector
 		W_X = vectorize( np.dot(np.transpose(self.UserTheta), Xi_Matirx))
-		W_X_current = np.dot(np.transpose(self.UserTheta), articlePicked.featureVector)
+		W_X_current = np.dot(np.transpose(self.UserTheta), featureVector)
 
 		self.W_X_arr[userID].append(W_X_current)
 		self.W_y_arr[userID].append(click)
@@ -142,16 +142,16 @@ class WStruct_batch_Cons:
 					self.W.T[i] = res.x
 			self.windowSize = self.windowSize*2 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
-		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(articlePicked.featureVector)))
+		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(articlePicked_fv)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
 
 		self.BigTheta = np.kron(np.identity(n=self.userNum) , self.UserTheta)
-	def getProb(self, alpha, article, userID):
-		TempFeatureM = np.zeros(shape =(len(article.featureVector), self.userNum))
-		TempFeatureM.T[userID] = article.featureVector
+	def getProb(self, alpha, featureVector, userID):
+		TempFeatureM = np.zeros(shape =(len(featureVector), self.userNum))
+		TempFeatureM.T[userID] = featureVector
 		TempFeatureV = vectorize(TempFeatureM)
 		
-		mean = np.dot(self.CoTheta.T[userID], article.featureVector)
+		mean = np.dot(self.CoTheta.T[userID], featureVector)
 		var = np.sqrt(np.dot(np.dot(TempFeatureV, self.CCA), TempFeatureV))
 		pta = mean + alpha * var
 		#pta = mean + alpha * var
@@ -163,11 +163,11 @@ class WStruct_SGD(WStruct_batch_Cons):
 		WStruct_batch_Cons.__init__(self,featureDimension = featureDimension, lambda_ = lambda_, eta_ = eta_, userNum = userNum, windowSize = windowSize)	
 		self.regu = regu
 
-	def updateParameters(self, articlePicked, click,  userID):	
+	def updateParameters(self, featureVector, click,  userID):	
 		self.counter +=1
 		self.Wlong = vectorize(self.W)
-		featureDimension = len(articlePicked.featureVector)
-		T_X = vectorize(np.outer(articlePicked.featureVector, self.W.T[userID])) 
+		featureDimension = len(featureVector)
+		T_X = vectorize(np.outer(featureVector, self.W.T[userID])) 
 		self.A += np.outer(T_X, T_X)	
 		self.b += click*T_X
 		if self.RankoneInverse:
@@ -175,10 +175,10 @@ class WStruct_SGD(WStruct_batch_Cons):
 			self.AInv = self.AInv - (np.outer(temp,temp))/(1.0+np.dot(np.transpose(T_X),temp))
 		else:
 			self.AInv =  np.linalg.inv(self.A)
-		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(articlePicked.featureVector)) 
+		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(featureVector)) 
 
 		Xi_Matirx = np.zeros(shape = (featureDimension, self.userNum))
-		Xi_Matirx.T[userID] = articlePicked.featureVector
+		Xi_Matirx.T[userID] = featureVector
 		W_X = vectorize( np.dot(np.transpose(self.UserTheta), Xi_Matirx))
 		self.batchGradient +=evaluateGradient(W_X, click, self.Wlong, self.lambda_, self.regu  )
 
@@ -198,7 +198,7 @@ class WStruct_SGD(WStruct_batch_Cons):
 			print self.W.T[userID]
 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
-		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(articlePicked.featureVector)))
+		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
 		self.BigTheta = np.kron(np.identity(n=self.userNum) , self.UserTheta)
 
@@ -226,8 +226,8 @@ class LearnWAlgorithm:
 				maxPTA = x_pta
 
 		return articlePicked
-	def updateParameters(self, articlePicked, click, userID):
-		self.USERS.updateParameters(articlePicked, click, userID)
+	def updateParameters(self, featureVector, click, userID):
+		self.USERS.updateParameters(featureVector, click, userID)
 		
 	def getTheta(self, userID):
 		return self.USERS.UserTheta.T[userID]
