@@ -56,7 +56,7 @@ def getbounds(dim):
 
 
 class WStruct_batch_Cons:
-	def __init__(self, featureDimension, lambda_,  userNum, windowSize, RankoneInverse):
+	def __init__(self, featureDimension, lambda_,userNum,W, windowSize, RankoneInverse):
 		self.windowSize = windowSize
 		self.counter = 0
 		self.RankoneInverse = RankoneInverse
@@ -70,7 +70,8 @@ class WStruct_batch_Cons:
 		self.AInv = np.linalg.inv(self.A)
 		
 		#self.W = np.random.random((userNum, userNum))
-		self.W = np.identity(n = userNum)
+		#self.W = np.identity(n = userNum)
+                self.W = W
 		self.Wlong = vectorize(self.W)
 		self.batchGradient = np.zeros(userNum*userNum)
 
@@ -140,7 +141,8 @@ class WStruct_batch_Cons:
 					current = self.W.T[i]
 					res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', bounds=getbounds(len(self.W)), options={'disp': False})
 					self.W.T[i] = res.x
-			self.windowSize = self.windowSize*2 
+                        if self.windowSize<2000:
+                                self.windowSize = self.windowSize*2 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
 		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))

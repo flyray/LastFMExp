@@ -9,7 +9,7 @@ from operator import itemgetter
 import datetime
 import numpy as np  
 from scipy.sparse import csgraph
-from scipy.spatial import distance
+#from scipy.spatial import distance
 #from YahooExp_util_functions import getClusters, getIDAssignment, parseLine, save_to_file, initializeW, vectorize, matrixize, articleAccess
 from LastFM_util_functions_2 import *#getFeatureVector, initializeW, initializeGW, parseLine, save_to_file, initializeW_clustering, initializeGW_clustering
 #from LastFM_util_functions import getFeatureVector, initializeW, initializeGW, parseLine, save_to_file
@@ -39,8 +39,8 @@ class CoLinUCBStruct(CoLinUCBUserSharedStruct):
         CoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
         self.reward = 0  
 class LearnWStruct(WStruct_batch_Cons):
-    def __init__(self, featureDimension, lambda_, userNum, RankoneInverse = False):
-        WStruct_batch_Cons.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, windowSize = userNum, RankoneInverse =RankoneInverse)
+    def __init__(self, featureDimension, lambda_, userNum,W, RankoneInverse = False):
+        WStruct_batch_Cons.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum,W=W, windowSize = userNum, RankoneInverse =RankoneInverse)
         self.reward = 0  
 class GOBLinStruct(GOBLinSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         if runLearnW:
             s += '  LearnW '+str(LearnW_USERS.reward)
             recordedStats.append(LearnWPicked)
-            recordedStats.append(LearnWB_USERS.reward)
+            recordedStats.append(LearnW_USERS.reward)
         if runGOBLin:
             s += '  GOBLin '+str(GOBLin_USERS.reward)
             recordedStats.append(GOBLinPicked)
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     else:
         fileName = address + "/processed_events_shuffled.dat"
     
-    fileSig = args.dataset+'_'+args.clusterfile.name.split('/')[-1]+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_'
+    fileSig = args.dataset+'_'+args.clusterfile.name.split('/')[-1]+'_shuffled_Clustering_'+args.alg+'_Diagnol_'+args.diagnol+'_'+fileName.split('/')[3]+'_IniW2000'
 
 
     articles_random = randomStruct()
@@ -234,7 +234,7 @@ if __name__ == '__main__':
         if runCoLinUCB:
             CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W, RankoneInverse)
         if runLearnW:
-            LearnW_USERS = LearnWStruct(d, lambda_ ,userNum, RankoneInverse)
+            LearnW_USERS = LearnWStruct(d, lambda_ ,userNum,W, RankoneInverse)
         if runGOBLin:
             GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW, RankoneInverse)
 
@@ -409,7 +409,7 @@ if __name__ == '__main__':
                     model_dump(CoLinUCB_USERS, model_name, i) 
             if runLearnW:
                 if LearnWPicked == article_chosen:
-                    CLearnW_USERS.reward +=1
+                    LearnW_USERS.reward +=1
                     LearnWReward = 1
                 LearnW_USERS.updateParameters(LearnW_PickedfeatureVector,LearnWReward, currentUserID)
                 if save_flag:
