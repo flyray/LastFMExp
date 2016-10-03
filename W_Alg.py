@@ -29,18 +29,6 @@ def matrixize(V, C_dimension):
 	W = temp
 	return W
 
-def fun(x, y, theta):
-	obj = (1/2.0)*(np.dot(np.transpose(x), theta) - click)**2
-	regularization = 0
-	return obj + regularization
-
-def evaluateGradient(x,y,theta, lambda_, regu ):
-	if regu == 'l1':
-		grad = x*(np.dot(np.transpose(x),theta) - y) + lambda_*np.sign(theta)  #Lasso 
-	elif regu == 'l2':
-		grad = x*(np.dot(np.transpose(x),theta) - y) + lambda_*theta           # Ridge                      
-	return grad
-
 def getcons(dim):
 	cons = []
 	cons.append({'type': 'eq','fun': lambda x : np.sum(x)-1})
@@ -71,7 +59,7 @@ class WStruct_batch_Cons:
 		
 		#self.W = np.random.random((userNum, userNum))
 		#self.W = np.identity(n = userNum)
-                self.W = W
+		self.W = W
 		self.Wlong = vectorize(self.W)
 		self.batchGradient = np.zeros(userNum*userNum)
 
@@ -107,30 +95,6 @@ class WStruct_batch_Cons:
 		self.W_X_arr[userID].append(W_X_current)
 		self.W_y_arr[userID].append(click)
 
-		def fun(w):
-			w = np.asarray(w)
-			res = np.sum((np.dot(self.W_X_arr[userID], w) - self.W_y_arr[userID])**2, axis = 0) + self.lambda_*np.linalg.norm(w)
-			return res
-		def fun(w,X,Y):
-			w = np.asarray(w)
-			res = np.sum((np.dot(X, w) - Y)**2, axis = 0) + self.lambda_*np.linalg.norm(w)
-			return res
-
-		'''	
-		def fprime(w):
-			w = np.asarray(w)
-			res = self.W_X_arr[userID]*(np.dot(np.transpose(self.W_X_arr[userID]),w) - self.W_y_arr[userID]) + self.lambda_*w
-			return res
-		'''
-		'''
-		if self.counter%self.windowSize ==0:
-			current = self.W.T[userID]
-			res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', bounds=getbounds(len(self.W)), options={'disp': False})
-			if res.x.any()>1 or res.x.any <0:
-				print 'error'
-				print res.x
-			self.W.T[userID] = res.x
-		'''
 		#print self.windowSize
 		if self.counter%self.windowSize ==0:
 			for i in range(len(self.W)):
@@ -138,11 +102,17 @@ class WStruct_batch_Cons:
 					def fun(w):
 						w = np.asarray(w)
 						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w)
+					def evaluateGradient(w):
+						w = np.asarray(w)
+						X = np.asarray(self.W_X_arr[i])
+						y = np.asarray(self.W_y_arr[i])
+						grad = np.dot(np.transpose(X) , ( np.dot(X,w)- y)) + self.lambda_ * w
+						return grad
 					current = self.W.T[i]
-					res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', bounds=getbounds(len(self.W)), options={'disp': False})
+					res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient, bounds=getbounds(len(self.W)), options={'disp': False})
 					self.W.T[i] = res.x
-                        if self.windowSize<2000:
-                                self.windowSize = self.windowSize*2 
+                    if self.windowSize<2000:
+                    	self.windowSize = self.windowSize*2 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
 		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
@@ -160,52 +130,7 @@ class WStruct_batch_Cons:
 		return pta
 
 
-class WStruct_SGD(WStruct_batch_Cons):
-	def __init__(self, featureDimension, lambda_, eta_, userNum, windowSize, RankoneInverse, regu='l2'):
-		WStruct_batch_Cons.__init__(self,featureDimension = featureDimension, lambda_ = lambda_, eta_ = eta_, userNum = userNum, windowSize = windowSize)	
-		self.regu = regu
-
-	def updateParameters(self, featureVector, click,  userID):	
-		self.counter +=1
-		self.Wlong = vectorize(self.W)
-		featureDimension = len(featureVector)
-		T_X = vectorize(np.outer(featureVector, self.W.T[userID])) 
-		self.A += np.outer(T_X, T_X)	
-		self.b += click*T_X
-		if self.RankoneInverse:
-			temp = np.dot(self.AInv, T_X)
-			self.AInv = self.AInv - (np.outer(temp,temp))/(1.0+np.dot(np.transpose(T_X),temp))
-		else:
-			self.AInv =  np.linalg.inv(self.A)
-		self.UserTheta = matrixize(np.dot(self.AInv, self.b), len(featureVector)) 
-
-		Xi_Matirx = np.zeros(shape = (featureDimension, self.userNum))
-		Xi_Matirx.T[userID] = featureVector
-		W_X = vectorize( np.dot(np.transpose(self.UserTheta), Xi_Matirx))
-		self.batchGradient +=evaluateGradient(W_X, click, self.Wlong, self.lambda_, self.regu  )
-
-		if self.counter%self.windowSize ==0:
-			self.Wlong -= 1/(float(self.counter/self.windowSize)+1)*self.batchGradient
-			self.W = matrixize(self.Wlong, self.userNum)
-			self.W = normalize(self.W, axis=0, norm='l1')
-			#print 'SVD', self.W
-			self.batchGradient = np.zeros(self.userNum*self.userNum)
-			# Use Ridge regression to fit W
-		'''
-		plt.pcolor(self.W_b)
-		plt.colorbar
-		plt.show()
-		'''
-		if self.W.T[userID].any() <0 or self.W.T[userID].any()>1:
-			print self.W.T[userID]
-
-		self.CoTheta = np.dot(self.UserTheta, self.W)
-		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
-		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
-		self.BigTheta = np.kron(np.identity(n=self.userNum) , self.UserTheta)
-
 	
-		
 class LearnWAlgorithm:
 	def __init__(self, dimension, alpha, lambda_, eta_, n, windowSize, RankoneInverse = False):  # n is number of users
 		self.USERS = WStruct_batch_Cons(dimension, lambda_, eta_, n, windowSize, RankoneInverse)
@@ -243,9 +168,5 @@ class LearnWAlgorithm:
 	def getA(self):
 		return self.USERS.A
 
-class LearnWAlgorithm_SGD(LearnWAlgorithm):
-	def __init__(self, dimension, alpha, lambda_, eta_, n, windowSize, RankoneInverse= False ):
-		LearnWAlgorithm.__init__(self, dimension, alpha, lambda_, eta_, n, windowSize, RankoneInverse)
-		self.USERS = WStruct_SGD(dimension, lambda_, eta_, n, windowSize, RankoneInverse)
 
 
