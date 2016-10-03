@@ -111,8 +111,8 @@ class WStruct_batch_Cons:
 					current = self.W.T[i]
 					res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient, bounds=getbounds(len(self.W)), options={'disp': False})
 					self.W.T[i] = res.x
-                    if self.windowSize<2000:
-                    	self.windowSize = self.windowSize*2 
+                                        if self.windowSize<2000:
+                                                self.windowSize = self.windowSize*2 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
 		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
