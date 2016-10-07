@@ -34,7 +34,6 @@ def getcons(dim):
 	cons.append({'type': 'eq','fun': lambda x : np.sum(x)-1})
 	for i in range(dim):
 		cons.append({'type' : 'ineq','fun' : lambda  x: x[i] })
-		cons.append({'type' : 'ineq','fun' : lambda x: 1-x[i]})
 	return tuple(cons)
 def getbounds(dim):
 	bnds = []
@@ -44,10 +43,11 @@ def getbounds(dim):
 
 
 class WStruct_batch_Cons:
-	def __init__(self, featureDimension, lambda_,userNum,W, windowSize, RankoneInverse):
+	def __init__(self, featureDimension, lambda_,userNum,W, windowSize, RankoneInverse, WRegu):
 		self.windowSize = windowSize
-		self.counter = 0
+		self.counter = 1
 		self.RankoneInverse = RankoneInverse
+		self.WRegu = WRegu
 		self.userNum = userNum
 		self.lambda_ = lambda_
 		# Basic stat in estimating Theta
@@ -101,18 +101,30 @@ class WStruct_batch_Cons:
 				if len(self.W_X_arr[i]) !=0:
 					def fun(w):
 						w = np.asarray(w)
-						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w)
+						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w)**2
 					def evaluateGradient(w):
 						w = np.asarray(w)
 						X = np.asarray(self.W_X_arr[i])
 						y = np.asarray(self.W_y_arr[i])
 						grad = np.dot(np.transpose(X) , ( np.dot(X,w)- y)) + self.lambda_ * w
-						return grad
+						return 2*grad
+					def fun_WRegu(w):
+						w = np.asarray(w)
+						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w - self.W.T[i])**2
+					def evaluateGradient_WRegu(w):
+						w = np.asarray(w)
+						X = np.asarray(self.W_X_arr[i])
+						y = np.asarray(self.W_y_arr[i])
+						grad = np.dot(np.transpose(X) , ( np.dot(X,w)- y)) + self.lambda_ * (w - self.W.T[i])
+						return 2*grad
 					current = self.W.T[i]
-					res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient, bounds=getbounds(len(self.W)), options={'disp': False})
+					if self.WRegu:
+						res = minimize(fun_WRegu, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient_WRegu, bounds=getbounds(len(self.W)), options={'disp': False})
+					else:
+						res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient, bounds=getbounds(len(self.W)), options={'disp': False})
 					self.W.T[i] = res.x
-                                        if self.windowSize<2000:
-                                                self.windowSize = self.windowSize*2 
+					if self.windowSize<2000:
+						self.windowSize = self.windowSize*2 
 		self.CoTheta = np.dot(self.UserTheta, self.W)
 		self.BigW = np.kron(np.transpose(self.W), np.identity(n=len(featureVector)))
 		self.CCA = np.dot(np.dot(self.BigW , self.AInv), np.transpose(self.BigW))
@@ -132,8 +144,8 @@ class WStruct_batch_Cons:
 
 	
 class LearnWAlgorithm:
-	def __init__(self, dimension, alpha, lambda_, eta_, n, windowSize, RankoneInverse = False):  # n is number of users
-		self.USERS = WStruct_batch_Cons(dimension, lambda_, eta_, n, windowSize, RankoneInverse)
+	def __init__(self, dimension, alpha, lambda_, eta_, n, windowSize, RankoneInverse = False, WRegu = False):  # n is number of users
+		self.USERS = WStruct_batch_Cons(dimension, lambda_, eta_, n, windowSize, RankoneInverse, WRegu)
 		self.dimension = dimension
 		self.alpha = alpha
 

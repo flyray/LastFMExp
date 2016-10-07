@@ -39,8 +39,8 @@ class CoLinUCBStruct(CoLinUCBUserSharedStruct):
         CoLinUCBUserSharedStruct.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum, W = W, RankoneInverse = RankoneInverse)
         self.reward = 0  
 class LearnWStruct(WStruct_batch_Cons):
-    def __init__(self, featureDimension, lambda_, userNum,W, RankoneInverse = False):
-        WStruct_batch_Cons.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum,W=W, windowSize = userNum, RankoneInverse =RankoneInverse)
+    def __init__(self, featureDimension, lambda_, userNum,W, RankoneInverse = False, WRegu=False):
+        WStruct_batch_Cons.__init__(self, featureDimension = featureDimension, lambda_ = lambda_, userNum = userNum,W=W, windowSize = 200, RankoneInverse =RankoneInverse, WRegu=False)
         self.reward = 0  
 class GOBLinStruct(GOBLinSharedStruct):
     def __init__(self, featureDimension, lambda_, userNum, W, RankoneInverse = False):
@@ -121,6 +121,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--RankoneInverse', action='store_true',
                     help='Use Rankone Correction to do matrix inverse.') 
+    parser.add_argument('--WRegu', action='store_true',
+                    help='Regularization to true W.') 
     # Dataset.
     parser.add_argument('--dataset', required=True, choices=['LastFM', 'Delicious'],
                         help='Select Dataset to run, could be LastFM or Delicious.')
@@ -147,6 +149,7 @@ if __name__ == '__main__':
     
     totalObservations = 0
     RankoneInverse =args.RankoneInverse
+    WRegu = args.WRegu
 
  
     OriginaluserNum = 2100
@@ -234,7 +237,7 @@ if __name__ == '__main__':
         if runCoLinUCB:
             CoLinUCB_USERS = CoLinUCBStruct(d, lambda_ ,userNum, W, RankoneInverse)
         if runLearnW:
-            LearnW_USERS = LearnWStruct(d, lambda_ ,userNum,W, RankoneInverse)
+            LearnW_USERS = LearnWStruct(d, lambda_ ,userNum,W, RankoneInverse, WRegu)
         if runGOBLin:
             GOBLin_USERS = GOBLinStruct(d, lambda_, userNum, GW, RankoneInverse)
 
