@@ -180,7 +180,7 @@ if __name__ == '__main__':
     userFeatureVectors = generateUserFeature(W)
     print userFeatureVectors
     # Decide which algorithms to run.
-    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= run_Hybrid_LinUCB=False
+    runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB= run_Hybrid_LinUCB=runLearnW=False
     if args.alg:
         if args.alg == 'CoLinUCB':
             runCoLinUCB = True
