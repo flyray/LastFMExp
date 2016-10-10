@@ -48,6 +48,7 @@ class WStruct_batch_Cons:
 		self.counter = 1
 		self.RankoneInverse = RankoneInverse
 		self.WRegu = WRegu
+		self.L1Regu = True
 		self.userNum = userNum
 		self.lambda_ = lambda_
 		# Basic stat in estimating Theta
@@ -99,7 +100,7 @@ class WStruct_batch_Cons:
 		if self.counter%self.windowSize ==0:
 			for i in range(len(self.W)):
 				if len(self.W_X_arr[i]) !=0:
-					def fun_l2(w):
+					def fun(w):
 						w = np.asarray(w)
 						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w)**2
 					def fun_l1(w):
@@ -121,7 +122,9 @@ class WStruct_batch_Cons:
 						grad = np.dot(np.transpose(X) , ( np.dot(X,w)- y)) + self.lambda_ * (w - self.W.T[i])
 						return 2*grad
 					current = self.W.T[i]
-					if self.WRegu:
+					if self.L1Regu:
+						res = minimize(fun_l1, current, constraints = getcons(len(self.W)), method ='SLSQP', bounds=getbounds(len(self.W)), options={'disp': False})
+					elif self.WRegu:
 						res = minimize(fun_WRegu, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient_WRegu, bounds=getbounds(len(self.W)), options={'disp': False})
 					else:
 						res = minimize(fun, current, constraints = getcons(len(self.W)), method ='SLSQP', jac = evaluateGradient, bounds=getbounds(len(self.W)), options={'disp': False})
