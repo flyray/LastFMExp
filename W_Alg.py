@@ -99,9 +99,12 @@ class WStruct_batch_Cons:
 		if self.counter%self.windowSize ==0:
 			for i in range(len(self.W)):
 				if len(self.W_X_arr[i]) !=0:
-					def fun(w):
+					def fun_l2(w):
 						w = np.asarray(w)
 						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w)**2
+					def fun_l1(w):
+						w = np.asarray(w)
+						return np.sum((np.dot(self.W_X_arr[i], w) - self.W_y_arr[i])**2, axis = 0) + self.lambda_*np.linalg.norm(w,1)**2
 					def evaluateGradient(w):
 						w = np.asarray(w)
 						X = np.asarray(self.W_X_arr[i])
