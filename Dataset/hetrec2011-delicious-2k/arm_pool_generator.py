@@ -19,17 +19,15 @@ for line in fin:
 		user_arm_tag.append(t)
 print 'event number: '+str(len(user_arm_tag))
 '''
-#get all arms
+# get all arms
 arm_pool = Set([])
 for t in user_arm_tag:
-	arm_pool.add(t['aid'])
+    arm_pool.add(t['aid'])
 
-
-#generate random arm_pool and write to file
-fout = open('./'.split('/')[0]+'/processed_events.dat','w')
+# generate random arm_pool and write to file
+fout = open('./'.split('/')[0] + '/processed_events.dat', 'w')
 fout.write('userid	timestamp	arm_pool')
 for t in user_arm_tag:
-	random_pool = [t['aid']]+random.sample(arm_pool, 24)
-	fout.write(str(t['uid'])+'\t'+str(t['tstamp'])+'\t'+str(random_pool)+'\n')
+    random_pool = [t['aid']] + random.sample(arm_pool, 24)
+    fout.write(str(t['uid']) + '\t' + str(t['tstamp']) + '\t' + str(random_pool) + '\n')
 fout.close()
-

@@ -7,10 +7,10 @@ labelfile = sys.argv[1]
 # read cluster label
 label = []
 for i in range(200):
-	label.append((0, i))
-with open(labelfile,'r') as fin:
-	for line in fin:		
-	    label[int(line)] = (label[int(line)][0]+1, label[int(line)][1])
+    label.append((0, i))
+with open(labelfile, 'r') as fin:
+    for line in fin:
+        label[int(line)] = (label[int(line)][0] + 1, label[int(line)][1])
 
 label.sort()
 label.reverse()
