@@ -6,7 +6,8 @@ from operator import itemgetter
 import sys
 
 if __name__ == '__main__':
-    Yahoo_save_address = str(sys.argv[1])
+    Yahoo_save_address = "./YahooResults"
+    # Yahoo_save_address = str(sys.argv[1])
 
     filenames = [x for x in os.listdir(Yahoo_save_address) if '.csv' in x]
 

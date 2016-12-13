@@ -72,6 +72,7 @@ def is_valid_file(parser, arg):
 if __name__ == '__main__':
     # regularly print stuff to see if everything is going alright.
     # this function is inside main so that it shares variables with main and I dont wanna have large number of function arguments
+
     def printWrite():
         if runLinUCB:
             LinUCBTotalReward = 0
@@ -196,7 +197,7 @@ if __name__ == '__main__':
     FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
     # Generate user feature vectors
     userFeatureVectors = generateUserFeature(W)
-    print userFeatureVectors
+    #print userFeatureVectors
     # Decide which algorithms to run.
     runCoLinUCB = runGOBLin = runLinUCB = run_M_LinUCB = run_Uniform_LinUCB = run_Hybrid_LinUCB = runLearnW = False
     if args.alg:
@@ -225,9 +226,8 @@ if __name__ == '__main__':
     else:
         fileName = address + "/processed_events_shuffled.dat"
 
-    fileSig = args.dataset + '_' + args.clusterfile.name.split('/')[
-        -1] + '_shuffled_Clustering_' + args.alg + '_Diagnol_' + args.diagnol + '_' + fileName.split('/')[
-                  3] + '_IniW2000'
+    # fileSig = args.dataset + '_' + args.clusterfile.name.split('/')[-1] + '_shuffled_Clustering_' + args.alg + '_Diagnol_' + args.diagnol + '_' + fileName.split('/')[3] + '_IniW2000'
+    fileSig = args.dataset + '_'  + '_shuffled_Clustering_' + args.alg + '_Diagnol_' + args.diagnol + '_' + fileName.split('/')[3] + '_IniW2000'
 
     articles_random = randomStruct()
     if args.load:

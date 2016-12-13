@@ -24,9 +24,6 @@ class CoLinUCBUserSharedStruct(object):
 
         self.A += np.outer(X, X)
         self.b += click * X
-        # fout=open('CoLinPower','a+')
-        # fout.write(str(self.A)+'\n')
-        # fout.close()
         if self.RankoneInverse:
             temp = np.dot(self.AInv, X)
             self.AInv = self.AInv - (np.outer(temp, temp)) / (1.0 + np.dot(np.transpose(X), temp))
@@ -40,9 +37,8 @@ class CoLinUCBUserSharedStruct(object):
     def getProb(self, alpha, articleFeatureVector, userID):
         TempFeatureV = np.zeros(len(articleFeatureVector) * self.userNum)
         TempFeatureV[int(userID) * self.d:(int(userID) + 1) * self.d] = np.asarray(articleFeatureVector)
-        # print self.CoTheta.T[userID]
-        # print articleFeatureVector
         np.dot(self.CoTheta.T[userID], self.CoTheta.T[userID])
+
         np.dot(articleFeatureVector, articleFeatureVector)
         mean = np.dot(self.CoTheta.T[userID], articleFeatureVector)
         var = np.sqrt(np.dot(np.dot(TempFeatureV, self.CCA), TempFeatureV))

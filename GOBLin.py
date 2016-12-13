@@ -29,7 +29,6 @@ class GOBLinSharedStruct:
         CoFeaV = np.dot(self.STBigWInv, featureVectorV)
         self.A = self.A + np.outer(CoFeaV, CoFeaV)
         # print 'CoFeaVtype', type(CoFeaV), type(self.b), self.b.shape, CoFeaV.shape
-
         self.b = self.b + float(click) * CoFeaV
 
         if self.RankoneInverse:
@@ -43,7 +42,6 @@ class GOBLinSharedStruct:
     def getProb(self, alpha, article_FeatureVector, userID):
         featureVectorV = np.zeros(self.d * self.userNum)
         featureVectorV[int(userID) * self.d:(int(userID) + 1) * self.d] = np.asarray(article_FeatureVector)
-
         CoFeaV = np.dot(self.STBigWInv, featureVectorV)
 
         mean = np.dot(np.transpose(self.theta), CoFeaV)

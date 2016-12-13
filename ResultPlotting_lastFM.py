@@ -6,7 +6,7 @@ from operator import itemgetter
 
 if __name__ == '__main__':
 
-    filenames = [x for x in os.listdir(LastFM_save_address) if '.csv' in x]
+    filename ="./LastFMResults/"+"LastFM_50_shuffled_Clustering_ALL_Diagnol_1__09_15_00_40.csv"
 
     CoLinReward = {}
     GOBLinReward = {}
@@ -24,24 +24,19 @@ if __name__ == '__main__':
     tim = {}
     GOBtim = {}
     userNum = 100
-    # i = -1
-    for x in filenames:
-        filename = os.path.join(LastFM_save_address, x)
-        if 'LastFM_100_shuffled' in x:
-            i = -1
-            with open(filename, 'r') as f:
-                print str(filename)
-                for line in f:
+    i = -1
+    with open(filename, 'r') as f:
+        print str(filename)
+        for line in f:
+            i += 1
+            words = line.split(',')
+            if words[0].strip() != 'data':
+                continue
+            RandomReward[i], LinUCBReward[i], CoLinReward[i], GOBLinReward[i] = [float(x) for x in words[2].split(';')]
+            # RandomReward[i], Uniform_LinUCBReward[i], LinUCBReward[i], CoLinReward[i], GOBLinReward[i] = [float(x) for x in words[2].split(';')]
 
-                    i = i + 1
-                    words = line.split(',')
-                    if words[0].strip() != 'data':
-                        continue
-                    RandomReward[i], LinUCBReward[i], CoLinReward[i], GOBLinReward[i] = [float(x) for x in words[2].split(';')]
-                    # RandomReward[i], Uniform_LinUCBReward[i], LinUCBReward[i], CoLinReward[i], GOBLinReward[i] = [float(x) for x in words[2].split(';')]
-
-                    # tim[i] = int(words[1])
-                    tim[i] = i
+            # tim[i] = int(words[1])
+            tim[i] = i
 
     print len(tim), len(GOBLinReward)
     plt.plot(tim.values(), CoLinReward.values(), label='CoLin')
@@ -53,6 +48,6 @@ if __name__ == '__main__':
     # plt.plot(tim.values(), LinUCBCTRRatio.values(), label = 'LinUCB')
     plt.xlabel('time')
     plt.ylabel('Reward')
-    plt.legend(loc='lower right')
+    plt.legend(loc='upper left')
     plt.title('LastFM_UserNum' + str(userNum))
     plt.show()
