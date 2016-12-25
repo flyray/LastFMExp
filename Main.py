@@ -1,3 +1,4 @@
+#coding=utf-8
 # import matplotlib.pyplot as plt
 import argparse  # For argument parsing
 # import os.path
@@ -444,7 +445,12 @@ if __name__ == '__main__':
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward += 1
                     LinUCBReward = 1
-                LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)
+                LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
+
+                # 每次都用选中的arm更新
+                # article_chosenFeature = FeatureVectors[article_chosen]
+                # article_chosenFeature = np.array(article_chosenFeature, dtype=float)
+                # LinUCB_users[int(userID)].updateParameters(article_chosenFeature, LinUCBReward)
                 if save_flag:
                     print "Start saving model"
                     model_name = args.dataset + '_' + str(
