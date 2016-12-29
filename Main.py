@@ -517,5 +517,4 @@ if __name__ == '__main__':
     endTime = time.clock()
 
     print "end! time: %f s" % (endTime - startTime)
-    print "start Time: ", startTime, "  End Time:", endTime
 
