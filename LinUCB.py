@@ -2,6 +2,13 @@ import numpy as np
 from YahooExp_util_functions import vectorize
 
 
+def calculateDis(pastFeature, currentFeature):
+    distance = 0
+    for i in range(len(pastFeature)):
+        distance = distance + np.sqrt(np.square(pastFeature[i] - currentFeature[i]))
+    return distance
+
+
 class LinUCBUserStruct:
     def __init__(self, featureDimension, lambda_, RankoneInverse):
         self.d = featureDimension
@@ -10,6 +17,11 @@ class LinUCBUserStruct:
         self.AInv = np.linalg.inv(self.A)
         self.UserTheta = np.zeros(self.d)
         self.RankoneInverse = RankoneInverse
+
+        #  add
+        self.articlePickedList = []
+        self.articleClickedList = []
+        self.simList = []
 
     def updateParameters(self, articlePicked_FeatureVector, click):
         self.A += np.outer(articlePicked_FeatureVector, articlePicked_FeatureVector)
@@ -34,6 +46,31 @@ class LinUCBUserStruct:
         var = np.sqrt(np.dot(np.dot(article_FeatureVector, self.AInv), article_FeatureVector))
         pta = mean + alpha * var
         return pta
+
+    def calculateSim(self, currentFeature):
+        simList = []
+        totalSim = 0
+        for i in range(len(self.articlePickedList)):
+            tempSim = calculateDis(self.articlePickedList[i], currentFeature)
+            simList.append(tempSim)
+            totalSim += tempSim
+        # print "totalSim: ", totalSim
+        # print "simList: ", simList
+        simList = map(lambda x: x / totalSim, simList)
+        self.simList = simList
+        return simList
+
+    def calculateParameter(self):
+        for i in range(len(self.articlePickedList)):
+            tempFeature = self.articlePickedList[i]
+            self.A += np.outer(tempFeature, tempFeature)
+            self.b += tempFeature * self.articleClickedList[i] * self.simList[i]
+        self.AInv = np.linalg.inv(self.A)
+        self.UserTheta = np.dot(self.AInv, self.b)
+
+    def writeMemory(self, articlePicked_FeatureVector, click):
+        self.articlePickedList.append(articlePicked_FeatureVector)
+        self.articleClickedList.append(click)
 
 
 class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):

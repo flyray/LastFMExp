@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 # import matplotlib.pyplot as plt
 import argparse  # For argument parsing
 # import os.path
@@ -73,6 +73,9 @@ def is_valid_file(parser, arg):
 if __name__ == '__main__':
     # regularly print stuff to see if everything is going alright.
     # this function is inside main so that it shares variables with main and I dont wanna have large number of function arguments
+    startTime = time.clock()
+    print "start running!"
+
 
     def printWrite():
         if runLinUCB:
@@ -228,7 +231,8 @@ if __name__ == '__main__':
         fileName = address + "/processed_events_shuffled.dat"
 
     # fileSig = args.dataset + '_' + args.clusterfile.name.split('/')[-1] + '_shuffled_Clustering_' + args.alg + '_Diagnol_' + args.diagnol + '_' + fileName.split('/')[3] + '_IniW2000'
-    fileSig = args.dataset + '_'  + '_shuffled_Clustering_' + args.alg + '_Diagnol_' + args.diagnol + '_' + fileName.split('/')[3] + '_IniW2000'
+    # fileSig = args.dataset + '_'  + '_shuffled_Clustering_' + args.alg + '_Diagnol_' + args.diagnol + '_' + fileName.split('/')[3] + '_IniW2000'
+    fileSig = args.dataset  # 修改文件名,便于实验
 
     articles_random = randomStruct()
     if args.load:
@@ -391,6 +395,9 @@ if __name__ == '__main__':
                             GOBLin_PickedfeatureVector = article_featureVector
                             GOBLin_maxPTA = GOBLin_pta
                     if runLinUCB:
+                        # 12.26添加内容
+                        # LinUCB_users[int(userID)].calculateSim(article_featureVector)
+                        # LinUCB_users[int(userID)].calculateParameter()
                         LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
                         if LinUCB_maxPTA < LinUCB_pta:
                             LinUCBPicked = article_id
@@ -446,6 +453,9 @@ if __name__ == '__main__':
                     LinUCB_users[int(userID)].reward += 1
                     LinUCBReward = 1
                 LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
+
+                # 12.26 存储状态
+                # LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward)
 
                 # 每次都用选中的arm更新
                 # article_chosenFeature = FeatureVectors[article_chosen]
@@ -504,3 +514,5 @@ if __name__ == '__main__':
                     tstart = tend
     # print stuff to screen and save parameters to file when the Yahoo! dataset file ends
     printWrite()
+    endTime = time.clock()
+    print "end! time: %f s" % (endTime - startTime)
