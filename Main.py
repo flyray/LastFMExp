@@ -515,5 +515,7 @@ if __name__ == '__main__':
     # print stuff to screen and save parameters to file when the Yahoo! dataset file ends
     printWrite()
     endTime = time.clock()
+
     print "end! time: %f s" % (endTime - startTime)
+    print "start Time: ", startTime, "  End Time:", endTime
 
