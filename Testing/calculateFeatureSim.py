@@ -2,7 +2,7 @@
 import numpy as np
 
 def readFeatureVectors(FeatureVectorsFileName):
-    FeatureVectors = {}
+    FeatureVectors = []
     with open(FeatureVectorsFileName, 'r') as f:
         f.readline()
         for line in f:

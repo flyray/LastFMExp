@@ -20,6 +20,7 @@ from LinUCB import LinUCBUserStruct, Hybrid_LinUCBUserStruct
 from GOBLin import GOBLinSharedStruct
 from W_Alg import *
 
+import datetime
 
 # structure to save data from random strategy as mentioned in LiHongs paper
 class randomStruct:
@@ -70,12 +71,33 @@ def is_valid_file(parser, arg):
         return open(arg, 'r')  # return an open file handle
 
 
+# 读取已经计算好的向量距离矩阵
+def readFeatureDis(filePath):
+    print 'Strat read feature distance matrix ! \n reading...'
+    featureDis = []
+    with open(filePath, 'r') as f:
+        f.readline()
+        for line in f:
+            if float(line[0]) > 0:
+                tempLine = line.split("\t")
+                del tempLine[0]
+                del tempLine[0]
+                featureDis.append(tempLine)
+    f.close()
+    print "Read feature distance matrix over!"
+    return featureDis
+
+
 if __name__ == '__main__':
     # regularly print stuff to see if everything is going alright.
     # this function is inside main so that it shares variables with main and I dont wanna have large number of function arguments
     startTime = time.clock()
+    startT = datetime.datetime.now()
+    startT.strftime('%Y-%m-%d %H:%M:%S')
     print "start running!"
 
+    # 读取向量距离矩阵
+    featureDisM = readFeatureDis(featureDistanceMatrix)
 
     def printWrite():
         if runLinUCB:
@@ -194,12 +216,16 @@ if __name__ == '__main__':
                               args.showheatmap)  # Generate user relation matrix
         GW = initializeGW_label(Gepsilon, userNum, relationFileName, label, args.diagnol)
     else:
+        # LinUCB方法不需要下面这三句,加上影响速度,去掉
         normalizedNewW, newW, label = initializeW_clustering(OriginaluserNum, relationFileName, nClusters)
         GW = initializeGW_clustering(Gepsilon, relationFileName, newW)
         W = normalizedNewW
+        # print "LinUCB method, cut W"
     # Read Feature Vectors from File
     FeatureVectors = readFeatureVectorFile(FeatureVectorsFileName)
     # Generate user feature vectors
+
+    #  LinUCB 方法,注释掉下面这句
     userFeatureVectors = generateUserFeature(W)
     #print userFeatureVectors
     # Decide which algorithms to run.
@@ -305,6 +331,7 @@ if __name__ == '__main__':
     tsave = 60 * 60 * 46  # Time interval for saving model is one hour.
     tstart = time.time()
     save_flag = 0
+    printCount = 0
     with open(fileName, 'r') as f:
         f.readline()
         if runLinUCB:
@@ -396,12 +423,14 @@ if __name__ == '__main__':
                             GOBLin_maxPTA = GOBLin_pta
                     if runLinUCB:
                         # 12.26添加内容
-                        # LinUCB_users[int(userID)].calculateSim(article_featureVector)
-                        # LinUCB_users[int(userID)].calculateParameter()
+                        LinUCB_users[int(userID)].calculateSim(article_id, featureDisM)
+                        LinUCB_users[int(userID)].calculateParameter()
+
                         LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
                         if LinUCB_maxPTA < LinUCB_pta:
                             LinUCBPicked = article_id
                             LinUCB_PickedfeatureVector = article_featureVector
+                            LinUCB_PickedfeatureID = article_id
                             LinUCB_maxPTA = LinUCB_pta
                     if run_M_LinUCB:
                         M_LinUCB_pta = M_LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
@@ -452,10 +481,13 @@ if __name__ == '__main__':
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward += 1
                     LinUCBReward = 1
-                LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
+                # LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
 
-                # 12.26 存储状态
-                # LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward)
+                # 1.2 存储状态
+                LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward, LinUCB_PickedfeatureID)
+                if printCount % 100 == 0:
+                    print 'calculate on going! printCount: ', printCount
+                printCount += 1
 
                 # 每次都用选中的arm更新
                 # article_chosenFeature = FeatureVectors[article_chosen]
@@ -516,5 +548,9 @@ if __name__ == '__main__':
     printWrite()
     endTime = time.clock()
 
+    endT = datetime.datetime.now()
+    endT.strftime('%Y-%m-%d %H:%M:%S')
+
     print "end! time: %f s" % (endTime - startTime)
+    print "start time: ", startT, "    end time: ", endT
 

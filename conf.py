@@ -30,3 +30,5 @@ LastFM_relationFileName = os.path.join(LastFM_address, 'user_friends.dat.mapped'
 
 Delicious_FeatureVectorsFileName = os.path.join(Delicious_address, 'Arm_FeatureVectors_2.dat')
 Delicious_relationFileName = os.path.join(Delicious_address, 'user_contacts.dat.mapped')
+
+featureDistanceMatrix = os.path.join(LastFM_address, 'Arm_FeatureVectors_Dis.dat')

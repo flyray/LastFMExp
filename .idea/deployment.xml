@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="211.87.232.152">
+  <component name="PublishConfigData" autoUpload="On explicit save action" serverName="211.87.232.152" promptOnLocalOverwrite="false" showNewOnSourceInSync="false">
     <serverData>
       <paths name="211.87.232.152">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/pycharmWorkspace/LastFM" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/DeliciousResults" />
+            <excludedPath local="true" path="$PROJECT_DIR$/YahooResults" />
+            <excludedPath local="true" path="$PROJECT_DIR$/Dataset/hetrec2011-delicious-2k" />
+            <excludedPath local="true" path="$PROJECT_DIR$/Dataset/Yahoo" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="Copy of project-level server '211.87.232.152'">
         <serverdata>
           <mappings>
             <mapping deploy="/pycharmWorkspace/LastFM" local="$PROJECT_DIR$" web="/" />

@@ -22,6 +22,7 @@ class LinUCBUserStruct:
         self.articlePickedList = []
         self.articleClickedList = []
         self.simList = []
+        self.articleIdList = []
 
     def updateParameters(self, articlePicked_FeatureVector, click):
         self.A += np.outer(articlePicked_FeatureVector, articlePicked_FeatureVector)
@@ -47,16 +48,20 @@ class LinUCBUserStruct:
         pta = mean + alpha * var
         return pta
 
-    def calculateSim(self, currentFeature):
+    def calculateSim(self, articleId, featureDisM):
         simList = []
-        totalSim = 0
-        for i in range(len(self.articlePickedList)):
-            tempSim = calculateDis(self.articlePickedList[i], currentFeature)
+        totalSim = 0.0
+        # print 'articleIdList: ', self.articleIdList
+        for i in range(len(self.articleIdList)):
+            # print 'self.articleIdList[i]: ', self.articleIdList[i], 'articleId-1: ', articleId-1
+            tempSim = float(featureDisM[self.articleIdList[i]][articleId-1])
+            # print 'tempSim:', tempSim
+            # print 'row :[][0][1]: ', featureDisM[self.articleIdList[i]+1][0], featureDisM[self.articleIdList[i]+2][1]
             simList.append(tempSim)
             totalSim += tempSim
         # print "totalSim: ", totalSim
         # print "simList: ", simList
-        simList = map(lambda x: x / totalSim, simList)
+        simList = map(lambda x: (totalSim+1) / (x+1), simList)
         self.simList = simList
         return simList
 
@@ -64,13 +69,15 @@ class LinUCBUserStruct:
         for i in range(len(self.articlePickedList)):
             tempFeature = self.articlePickedList[i]
             self.A += np.outer(tempFeature, tempFeature)
-            self.b += tempFeature * self.articleClickedList[i] * self.simList[i]
+            self.b += tempFeature * self.articleClickedList[i]
+            # self.b += tempFeature * self.articleClickedList[i] * self.simList[i]
         self.AInv = np.linalg.inv(self.A)
         self.UserTheta = np.dot(self.AInv, self.b)
 
-    def writeMemory(self, articlePicked_FeatureVector, click):
+    def writeMemory(self, articlePicked_FeatureVector, click, articleId):
         self.articlePickedList.append(articlePicked_FeatureVector)
         self.articleClickedList.append(click)
+        self.articleIdList.append(int(articleId))
 
 
 class Hybrid_LinUCB_singleUserStruct(LinUCBUserStruct):
