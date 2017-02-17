@@ -48,6 +48,12 @@ class LinUCBUserStruct:
         pta = mean + alpha * var
         return pta
 
+    def getMatrixProb(self, alpha, article_FeatureMatrix):
+        mean = np.dot(self.UserTheta, np.transpose(article_FeatureMatrix))
+        var = np.sqrt(np.diag(np.dot(np.dot(article_FeatureMatrix, self.AInv), np.transpose(article_FeatureMatrix))))
+        ptaVector = mean + alpha * var
+        return ptaVector
+
     def calculateSim(self, articleId, featureDisM):
         simList = []
         totalSim = 0.0

@@ -69,8 +69,8 @@ class LinUCBUserStruct2:
         for i in range(len(self.articlePickedList)):
             tempFeature = self.articlePickedList[i]
             self.A += np.outer(tempFeature, tempFeature)
-            self.b += tempFeature * self.articleClickedList[i]
-            # self.b += tempFeature * self.articleClickedList[i] * self.simList[i]
+            # self.b += tempFeature * self.articleClickedList[i]
+            self.b += tempFeature * self.articleClickedList[i] * self.simList[i]
         self.AInv = np.linalg.inv(self.A)
         self.UserTheta = np.dot(self.AInv, self.b)
 
@@ -78,3 +78,10 @@ class LinUCBUserStruct2:
         self.articlePickedList.append(articlePicked_FeatureVector)
         self.articleClickedList.append(click)
         self.articleIdList.append(int(articleId))
+
+    def calculateSimByFeature(self, pastFeature, currentFeature):
+        distance = 0
+        for i in range(len(pastFeature)):
+            distance = distance + np.sqrt(np.square(float(pastFeature[i]) - float(currentFeature[i])))
+        return distance
+

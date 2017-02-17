@@ -36,6 +36,7 @@ class LinUCBStruct(LinUCBUserStruct2):
         self.reward = 0
 
 
+
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
         parser.error("The file %s does not exist!" % arg)
@@ -58,6 +59,24 @@ def readFeatureDis(filePath):
     f.close()
     print "Read feature distance matrix over!"
     return featureDis
+
+
+def calculateHistoryDis(historyArticle, pool_articles, FeatureVectors):
+    totalDis = 0.0
+    for article in pool_articles:
+        article_id = int(article.strip(']'))
+        article_featureVector = np.array(FeatureVectors[article_id], dtype=float)
+        tempDis = calculateDis(historyArticle, article_featureVector)
+        totalDis += tempDis
+
+    return totalDis
+
+
+def calculateDis(pastFeature, currentFeature):
+    distance = 0
+    for i in range(len(pastFeature)):
+        distance = distance + np.sqrt(np.square(pastFeature[i] - currentFeature[i]))
+    return distance
 
 
 if __name__ == '__main__':
@@ -251,33 +270,60 @@ if __name__ == '__main__':
 
             currentUserID = label[int(userID)]
             article_chosen = int(pool_articles[0])
-            # for article in np.random.permutation(pool_articles) :
+            # add this
+            totalDis = 0.0
+            historyArticleDis = []
+
+            for historyArticle in LinUCB_users[int(userID)].articlePickedList:
+                tempDis = calculateHistoryDis(historyArticle, pool_articles, FeatureVectors)
+                historyArticleDis.append(tempDis)
+                totalDis += tempDis
+
+            if len(historyArticleDis) > 1:
+                for articleDis in historyArticleDis:
+                    tempSim = (totalDis-articleDis) / ((len(historyArticleDis)-1) * totalDis)
+                    LinUCB_users[int(userID)].simList.append(tempSim)
+            else:
+                LinUCB_users[int(userID)].simList.append(1)
+
+            LinUCB_users[int(userID)].calculateParameter()
+
             for article in pool_articles:
                 article_id = int(article.strip(']'))
-                # print article_id
                 article_featureVector = FeatureVectors[article_id]
                 article_featureVector = np.array(article_featureVector, dtype=float)
-                # print article_featureVector
                 currentArticles.append(article_id)
-                # CoLinUCB pick article
-                if len(article_featureVector) == 25:
-                    if runLinUCB:
-                        # 12.26添加内容
-                        # LinUCB_users[int(userID)].calculateSim(article_id, featureDisM)
-                        # LinUCB_users[int(userID)].calculateParameter()
+                LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
+                if LinUCB_maxPTA < LinUCB_pta:
+                    LinUCBPicked = article_id
+                    LinUCB_PickedfeatureVector = article_featureVector
+                    LinUCB_PickedfeatureID = article_id
+                    LinUCB_maxPTA = LinUCB_pta
 
-                        LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
-                        if LinUCB_maxPTA < LinUCB_pta:
-                            LinUCBPicked = article_id
-                            LinUCB_PickedfeatureVector = article_featureVector
-                            LinUCB_PickedfeatureID = article_id
-                            LinUCB_maxPTA = LinUCB_pta
+            # origin code
+            # for article in pool_articles:
+            #     article_id = int(article.strip(']'))
+            #     # print article_id
+            #     article_featureVector = FeatureVectors[article_id]
+            #     article_featureVector = np.array(article_featureVector, dtype=float)
+            #     # print article_featureVector
+            #     currentArticles.append(article_id)
+            #     # CoLinUCB pick article
+            #     if len(article_featureVector) == 25:
+            #         if runLinUCB:
+            #             # 12.26添加内容
+            #             # LinUCB_users[int(userID)].calculateSim(article_id, featureDisM)
+            #             # LinUCB_users[int(userID)].calculateParameter()
+            #
+            #             LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
+            #             if LinUCB_maxPTA < LinUCB_pta:
+            #                 LinUCBPicked = article_id
+            #                 LinUCB_PickedfeatureVector = article_featureVector
+            #                 LinUCB_PickedfeatureID = article_id
+            #                 LinUCB_maxPTA = LinUCB_pta
+
 
             # article picked by random strategy
-            # article_chosen = currentArticles[0]
-            # print article_chosen, CoLinUCBPicked, LinUCBPicked, GOBLinPicked
-            # if CoLinUCBPicked !=LinUCBPicked:
-            #    print 'Error!!!!!'
             RandomPicked = choice(currentArticles)
             if RandomPicked == article_chosen:
                 articles_random.reward += 1
@@ -286,10 +332,10 @@ if __name__ == '__main__':
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward += 1
                     LinUCBReward = 1
-                LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
+                # LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
 
                 # 1.2 存储状态
-                # LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward, LinUCB_PickedfeatureID)
+                LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward, LinUCB_PickedfeatureID)
                 if printCount % 100 == 0:
                     print 'calculate on going! printCount: ', printCount
                 printCount += 1

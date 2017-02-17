@@ -97,7 +97,7 @@ if __name__ == '__main__':
     print "start running!"
 
     # 读取向量距离矩阵
-    featureDisM = readFeatureDis(featureDistanceMatrix)
+    # featureDisM = readFeatureDis(featureDistanceMatrix)
 
     def printWrite():
         if runLinUCB:
@@ -423,14 +423,14 @@ if __name__ == '__main__':
                             GOBLin_maxPTA = GOBLin_pta
                     if runLinUCB:
                         # 12.26添加内容
-                        LinUCB_users[int(userID)].calculateSim(article_id, featureDisM)
-                        LinUCB_users[int(userID)].calculateParameter()
+                        # LinUCB_users[int(userID)].calculateSim(article_id, featureDisM)
+                        # LinUCB_users[int(userID)].calculateParameter()
 
                         LinUCB_pta = LinUCB_users[int(userID)].getProb(alpha, article_featureVector)
                         if LinUCB_maxPTA < LinUCB_pta:
                             LinUCBPicked = article_id
                             LinUCB_PickedfeatureVector = article_featureVector
-                            LinUCB_PickedfeatureID = article_id
+                            # LinUCB_PickedfeatureID = article_id
                             LinUCB_maxPTA = LinUCB_pta
                     if run_M_LinUCB:
                         M_LinUCB_pta = M_LinUCB_users[currentUserID].getProb(alpha, article_featureVector)
@@ -481,10 +481,10 @@ if __name__ == '__main__':
                 if LinUCBPicked == article_chosen:
                     LinUCB_users[int(userID)].reward += 1
                     LinUCBReward = 1
-                # LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
+                LinUCB_users[int(userID)].updateParameters(LinUCB_PickedfeatureVector, LinUCBReward)  # 原代码
 
                 # 1.2 存储状态
-                LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward, LinUCB_PickedfeatureID)
+                # LinUCB_users[int(userID)].writeMemory(LinUCB_PickedfeatureVector, LinUCBReward, LinUCB_PickedfeatureID)
                 if printCount % 100 == 0:
                     print 'calculate on going! printCount: ', printCount
                 printCount += 1

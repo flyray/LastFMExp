@@ -15,13 +15,6 @@
           </excludedPaths>
         </serverdata>
       </paths>
-      <paths name="Copy of project-level server '211.87.232.152'">
-        <serverdata>
-          <mappings>
-            <mapping deploy="/pycharmWorkspace/LastFM" local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
     </serverData>
     <option name="myUploadOnCheckinName" value="211.87.232.152" />
     <option name="myAutoUpload" value="ON_EXPLICIT_SAVE" />
