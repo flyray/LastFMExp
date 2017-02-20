@@ -52,7 +52,8 @@ class LinUCBUserStruct:
         mean = np.dot(self.UserTheta, np.transpose(article_FeatureMatrix))
         var = np.sqrt(np.diag(np.dot(np.dot(article_FeatureMatrix, self.AInv), np.transpose(article_FeatureMatrix))))
         ptaVector = mean + alpha * var
-        return ptaVector
+        returnValues = [mean, var, ptaVector]
+        return returnValues
 
     def calculateSim(self, articleId, featureDisM):
         simList = []

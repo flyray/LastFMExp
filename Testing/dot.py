@@ -30,5 +30,5 @@ var_a = np.sqrt(np.dot(np.dot(a, a), np.transpose(a)))
 print c
 print cc
 
-print 'var_a:', var_a
-
+# print 'var_a:', var_a
+print 'cc:', cc
