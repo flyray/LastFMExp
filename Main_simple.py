@@ -81,8 +81,9 @@ if __name__ == '__main__':
 
     # 初始化算法和数据
     runLinUCB = True
-    fileName = address + "/processed_events_shuffled.dat"
+    # fileName = address + "/processed_events_shuffled.dat"
     fileSig = dataset  # 修改文件名,便于实验
+    fileName = LastFM_address + "/LastFMOrganizeData/4000TestData.dat"
 
     articles_random = randomStruct()
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
         f.write('LinUCBReward; ')
         f.write('\n')
 
-    print fileName, fileNameWrite
+    # print fileName, fileNameWrite
 
     tsave = 60 * 60 * 46  # Time interval for saving model is one hour.
     tstart = time.time()
